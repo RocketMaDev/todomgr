@@ -7,5 +7,9 @@ Makefile
 cmake_install.cmake
 install_manifest.txt
 compile_commands.json
+CPackConfig.cmake
+CPackSourceConfig.cmake
 CTestTestfile.cmake
 _deps
+build
+src/.cache
