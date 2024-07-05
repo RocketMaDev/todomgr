@@ -17,7 +17,7 @@ FetchContent_Declare(ftxui
 
 FetchContent_GetProperties(ftxui)
 IF(NOT ftxui_POPULATED)
-    FetchContent_Populate(ftxui)
+    FetchContent_MakeAvailable(ftxui)
     ADD_SUBDIRECTORY(${ftxui_SOURCE_DIR} ${ftxui_BINARY_DIR} EXCLUDE_FROM_ALL)
 ENDIF()
 
