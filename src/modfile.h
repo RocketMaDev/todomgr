@@ -11,7 +11,7 @@ enum Priority {
     CRITICAL, IMPORTANT, NORMAL, ORDINARY
 };
 
-typedef struct {
+typedef struct __todo_file_item {
     char *name;
     unsigned char subtaskCnt;
     char **subtasks;
@@ -24,7 +24,7 @@ typedef struct {
     char *desc;
 } TodoFileItem;
 
-typedef struct {
+typedef struct __todo_file {
     unsigned char tagPos;
     unsigned int lang : 1;
     unsigned char sortType;
@@ -36,7 +36,7 @@ typedef struct {
     TodoFileItem *items;
 } TodoFile;
 
-typedef struct {
+typedef struct __todo_item {
     char *name;
     int subtaskCount;
     char **subtaskList;
@@ -49,7 +49,7 @@ typedef struct {
     char *desc;
 } TodoItem;
 
-typedef struct {
+typedef struct __todo_info {
     bool lang;
     SortType sortType;
 

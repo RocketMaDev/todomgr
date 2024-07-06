@@ -10,4 +10,7 @@ int DeleteTodoItem(TodoInfo *g_info, int itemIndex);
 int ModifyTodoItem(TodoInfo *g_info, int itemIndexm, const char *name, const char *subtasks, 
         const int *tags, Priority priority, time_t startTime, time_t deadline, const char *desc);
 void SortTodoInfo(TodoInfo *g_info, SortType type);
+
+void MarkDone(TodoInfo *g_info, int itemIndex);
+void MarkUndone(TodoInfo *g_info, int itemIndex);
 #endif
