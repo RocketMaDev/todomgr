@@ -43,7 +43,7 @@ typedef struct __todo_item {
     int tagCount;
     int *tagList;
     bool done;
-    Priority priority;
+    enum Priority priority;
     time_t startTime;
     time_t deadline;
     char *desc;
@@ -51,7 +51,7 @@ typedef struct __todo_item {
 
 typedef struct __todo_info {
     bool lang;
-    SortType sortType;
+    enum SortType sortType;
 
     int tagCount;
     char **tags;
