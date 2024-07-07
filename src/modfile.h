@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 enum SortType {
-    SMART, NAME, PRIORITY, START_TIME, DEADLINE, DESCRIPTION
+    SMART, NAME, PRIORITY, START_TIME, DEADLINE
 };
 
 enum Priority {
