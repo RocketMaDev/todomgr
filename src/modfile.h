@@ -65,4 +65,6 @@ int ReadTodoFile(TodoInfo *g_info, const char *filepath);
 int WriteTodoFile(TodoInfo *g_info, const char *filepath);
 void ReleaseTodoInfo(TodoInfo *g_info);
 
+// static void acquireFileLock(void);
+// static void releaseFileLock(void);
 #endif
