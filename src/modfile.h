@@ -3,6 +3,8 @@
 #include <time.h>
 #include <stdbool.h>
 
+#define BUFSIZE 4096
+
 enum SortType {
     SMART, NAME, PRIORITY, START_TIME, DEADLINE
 };
@@ -60,7 +62,7 @@ typedef struct __todo_info {
     TodoItem *items;
 } TodoInfo;
 
-TodoInfo *InitTodoInfo(void);
+TodoInfo *InitTodoInfo(void);//干啥的
 int ReadTodoFile(TodoInfo *g_info, const char *filepath);
 int WriteTodoFile(TodoInfo *g_info, const char *filepath);
 void ReleaseTodoInfo(TodoInfo *g_info);
