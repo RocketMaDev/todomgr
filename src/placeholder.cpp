@@ -19,7 +19,7 @@ int main() {
     screen.TrackMouse(false);
 
 
-    auto quit_button = Button(GETTEXT(EXIT), screen.ExitLoopClosure());
+    auto quit_button = Button(GETTEXT(EXIT_PROMPT), screen.ExitLoopClosure());
 
     auto renderer = Renderer(quit_button, [&] {
             return vbox({
