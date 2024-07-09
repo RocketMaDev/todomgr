@@ -41,6 +41,8 @@ int ReadTodoFile(TodoInfo *g_info, const char *filepath) {
     fTodo.tagPos = buf[0];
     fTodo.lang = buf[1];
     fTodo.sortType = buf[2];
+    g_info->lang = fTodo.lang;
+    g_info->sortType = fTodo.sortType;
 
     // resolve tags
     char *cursor = buf + fTodo.tagPos;
@@ -57,12 +59,42 @@ int ReadTodoFile(TodoInfo *g_info, const char *filepath) {
     for (int i = 0; i < fTodo.todocnt; i++)
         tagitem[i] = tagitem[i] - buf + tagbuf;
     g_info->tags = tagitem;
+    g_info->tagCount = fTodo.tagcnt;
     cursor = tagend;
 
-    
-    // 读取文件内容并解析
-    // （此处需要根据具体的文件格式进行解析和数据存储）
-    
+    // read Item
+    fTodo.todocnt=*(int *)cursor;
+    g_info->items =malloc(sizeof(TodoItem)*fTodo.todocnt);
+    for (int i = 0; i < fTodo.todocnt; i++) {
+        g_info->items[i].name = strdup(cursor);
+        cursor += strlen(cursor) + 1;
+        g_info->items[i].subtaskCount = *(unsigned short *)cursor;
+        cursor += sizeof(unsigned char);
+        g_info->items[i].subtaskList = malloc(sizeof(char *) * g_info->items[i].subtaskCount);
+        for (int j = 0; j < g_info->items[i].subtaskCount; j++) {
+           g_info->items[i].subtaskList[j] = strdup(cursor);
+           cursor += strlen(cursor) + 1;
+        }
+        int tagCount = *(unsigned short *)cursor;
+        cursor += sizeof(unsigned short);
+        g_info->items[i].tagCount = tagCount;
+        g_info->items[i].tagList = malloc(sizeof(unsigned short) * tagCount);
+        for (int j = 1; j <= tagCount; j++) {
+            g_info->items[i].tagList[j] = *(unsigned short *)cursor;
+            cursor += sizeof(unsigned short);
+        }
+        *(&g_info->items[i].done) = *(unsigned char *)cursor;
+        cursor += sizeof(unsigned char);
+
+        g_info->items->startTime = *(time_t *)cursor;
+        cursor += sizeof(time_t);
+        g_info->items->deadline = *(time_t *)cursor;
+        cursor += sizeof(time_t);
+
+        g_info->items[i].desc = strdup(cursor);
+        cursor += strlen(cursor) + 1;
+    }
+
     fclose(file);
     return 0;
 }
@@ -76,7 +108,6 @@ int WriteTodoFile(TodoInfo *g_info, const char *filepath) {
     }
 
     // 将数据写入文件
-    // （此处需要根据具体的需求将数据格式化为文本并写入文件）
      
     int numInfos;
     printf("请输入要写入的 TodoInfo 数量: ");
