@@ -74,7 +74,7 @@ void SortTodoInfo(TodoInfo *g_info,  enum SortType type) {
         qsort(g_info->items, g_info->todoCount, sizeof(TodoItem), cmp_deadline);
         break;
     case SMART :
-        SmartSort(g_info->items);
+        qsort(g_info->items, g_info->todoCount, sizeof(TodoItem), cmp_smart);
         break;
     default:
         break;
