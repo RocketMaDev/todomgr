@@ -7,6 +7,7 @@
 #include "modfile.h"
 
 static char *tagbuf;
+static int tagbuf_len;
 // 初始化 TodoInfo 结构
 TodoInfo *InitTodoInfo(void) {
     TodoInfo *info = (TodoInfo *)malloc(sizeof(TodoInfo));
@@ -54,8 +55,9 @@ int ReadTodoFile(TodoInfo *g_info, const char *filepath) {
         tagitem[i] = tagend;
         while (*(tagend++) != '\0');
     }
-    tagbuf = malloc(tagend - cursor);
-    memcpy(tagbuf, cursor, tagend - cursor);
+    tagbuf_len = tagend - cursor;
+    tagbuf = malloc(tagbuf_len);
+    memcpy(tagbuf, cursor, tagbuf_len);
     for (int i = 0; i < fTodo.todocnt; i++)
         tagitem[i] = tagitem[i] - buf + tagbuf;
     g_info->tags = tagitem;
@@ -86,9 +88,9 @@ int ReadTodoFile(TodoInfo *g_info, const char *filepath) {
         *(&g_info->items[i].done) = *(unsigned char *)cursor;
         cursor += sizeof(unsigned char);
 
-        g_info->items->startTime = *(time_t *)cursor;
+        g_info->items[i].startTime = *(time_t *)cursor;
         cursor += sizeof(time_t);
-        g_info->items->deadline = *(time_t *)cursor;
+        g_info->items[i].deadline = *(time_t *)cursor;
         cursor += sizeof(time_t);
 
         g_info->items[i].desc = strdup(cursor);
@@ -99,110 +101,59 @@ int ReadTodoFile(TodoInfo *g_info, const char *filepath) {
     return 0;
 }
 
-// 写入 Todo 文件
+
 int WriteTodoFile(TodoInfo *g_info, const char *filepath) {
-    // 打开文件
     FILE *file = fopen(filepath, "wb");
     if (file == NULL) {
         return errno;
     }
+    unsigned char *buf=malloc(BUFSIZE);
+    memset(buf,0,BUFSIZE);
+    buf[0] = 3;
+    buf[1] = g_info->lang;
+    buf[2] = g_info->sortType;
+    char *cursor=buf+buf[0];
 
-    // 将数据写入文件
-     
-    int numInfos;
-    printf("请输入要写入的 TodoInfo 数量: ");
-    scanf("%d", &numInfos);
-
-    TodoInfo *infos = (TodoInfo *)malloc(numInfos * sizeof(TodoInfo));
-
-    for (int i = 0; i < numInfos; i++) {
-        printf("请输入第 %d 个 TodoInfo 的 lang 值（0 或 1）: ", i + 1);
-        scanf("%d", &infos[i].lang);
-
-        printf("请输入第 %d 个 TodoInfo 的 sortType（0 - 5）: ", i + 1);
-        int sortTypeInput;
-        scanf("%d", &sortTypeInput);
-        infos[i].sortType = (enum SortType)sortTypeInput;
-
-        printf("请输入第 %d 个 TodoInfo 的 tagCount: ", i + 1);
-        scanf("%d", &infos[i].tagCount);
-
-        infos[i].tags = (char **)malloc(infos[i].tagCount * sizeof(char *));
-        for (int j = 0; j < infos[i].tagCount; j++) {
-            printf("请输入第 %d 个 tag: ", j + 1);
-            char tag[100];
-            scanf("%s", tag);
-            infos[i].tags[j] = (char *)malloc(strlen(tag) + 1);
-            strcpy(infos[i].tags[j], tag);
-        }
-
-        printf("请输入第 %d 个 TodoInfo 的 todoCount: ", i + 1);
-        scanf("%d", &infos[i].todoCount);
-
-        infos[i].items = (TodoItem *)malloc(infos[i].todoCount * sizeof(TodoItem));
-        for (int j = 0; j < infos[i].todoCount; j++) {
-            printf("请输入第 %d 个 TodoItem 的 name: ", j + 1);
-            char name[100];
-            scanf("%s", name);
-            infos[i].items[j].name = (char *)malloc(strlen(name) + 1);
-            strcpy(infos[i].items[j].name, name);
-
-            printf("请输入第 %d 个 TodoItem 的 subtaskCount: ", j + 1);
-            scanf("%d", &infos[i].items[j].subtaskCount);
-
-            infos[i].items[j].subtaskList = (char **)malloc(infos[i].items[j].subtaskCount * sizeof(char *));
-            for (int k = 0; k < infos[i].items[j].subtaskCount; k++) {
-                printf("请输入第 %d 个 subtask: ", k + 1);
-                char subtask[100];
-                scanf("%s", subtask);
-                infos[i].items[j].subtaskList[k] = (char *)malloc(strlen(subtask) + 1);
-                strcpy(infos[i].items[j].subtaskList[k], subtask);
-            }
-
-            printf("请输入第 %d 个 TodoItem 的 tagCount: ", j + 1);
-            scanf("%d", &infos[i].items[j].tagCount);
-
-            infos[i].items[j].tagList = (int *)malloc(infos[i].items[j].tagCount * sizeof(int));
-            for (int k = 0; k < infos[i].items[j].tagCount; k++) {
-                printf("请输入第 %d 个 tag 值: ", k + 1);
-                scanf("%d", &infos[i].items[j].tagList[k]);
-            }
-
-            printf("请输入第 %d 个 TodoItem 的 done 值（0 或 1）: ", j + 1);
-            scanf("%d", &infos[i].items[j].done);
-
-            printf("请输入第 %d 个 TodoItem 的 priority（0 - 3）: ", j + 1);
-            int priorityInput;
-            scanf("%d", &priorityInput);
-            infos[i].items[j].priority = (enum Priority)priorityInput;
-
-            printf("请输入第 %d 个 TodoItem 的 startTime（格式：YYYY-MM-DD HH:MM:SS）: ", j + 1);
-            char startTimeStr[20];
-            scanf("%s", startTimeStr);
-            struct tm tm;
-            strptime(startTimeStr, "%d-%d-%d %d:%d:%d", &tm);
-            infos[i].items[j].startTime = mktime(&tm);
-
-            printf("请输入第 %d 个 TodoItem 的 deadline（格式：YYYY-MM-DD HH:MM:SS）: ", j + 1);
-            char deadlineStr[20];
-            scanf("%s", deadlineStr);
-            strptime(deadlineStr, "%d-%d-%d %d:%d:%d", &tm);
-            infos[i].items[j].deadline = mktime(&tm);
-
-            printf("请输入第 %d 个 TodoItem 的 desc: ", j + 1);
-            char desc[100];
-            scanf("%s", desc);
-            infos[i].items[j].desc = (char *)malloc(strlen(desc) + 1);
-            strcpy(infos[i].items[j].desc, desc);
-        }
-
-        // 将结构体写入文件
-        fwrite(&infos[i], sizeof(TodoInfo), 1, file);
+    *(unsigned short*) cursor = g_info->tagCount;
+    cursor+=sizeof(unsigned short);
+    for(int i = 0; i< g_info->tagCount;i++){
+       strcpy(cursor, g_info->tags[i]);
+       cursor+=strlen(cursor) + 1;
     }
+    *(int *)cursor = g_info->todoCount;
+    cursor+=sizeof(int);
+    for (int i = 0; i < g_info->todoCount; i++) {
+        strcpy(cursor, g_info->items[i].name);
+        cursor+=strlen(cursor) + 1;
+        *(unsigned char*)cursor = g_info->items[i].subtaskCount;
+        cursor += sizeof(unsigned char);
+        int subcnt = g_info->items[i].subtaskCount;
+        for (int j = 0; j < subcnt; j++){
+            strcpy(cursor, g_info->items[i].subtaskList[j]);
+            cursor+=strlen(cursor) + 1;
+        }
+        *(unsigned short*) cursor = g_info->items[i].tagCount;
+        cursor += sizeof(short);
+        for (int j = 0; j < g_info->items[i].tagCount ; i++)
+        {
+           *(unsigned short*) cursor = g_info->items[i].tagList[j];
+            cursor += sizeof(short);
+        }
 
+        *(unsigned char *)cursor = g_info->items[i].done | (g_info->items[i].priority << 1);
+        cursor+=sizeof(unsigned char);
+        *(time_t*)cursor = g_info->items[i].startTime;
+        cursor += sizeof(time_t);
+        *(time_t*)cursor = g_info->items[i].deadline;
+        cursor += sizeof(time_t);
+        strcpy(cursor, g_info->items[i].desc);
+        cursor+=strlen(cursor) + 1;
+    }
+    
+    fwrite(buf,1,BUFSIZE,file);
     fclose(file);
-return 0;
-   }
+    return 0;
+}
 
 
 // 释放 TodoInfo 占用的内存
@@ -210,30 +161,35 @@ void ReleaseTodoInfo(TodoInfo *g_info) {
     if (g_info == NULL) {
         return;
     }
-
-    if (g_info->tags) {
-        for (int i = 0; i < g_info->tagCount; i++) {
-            free(g_info->tags[i]);
-        }
-        free(g_info->tags);
+    for (int i = 0; i < g_info->tagCount; i++)
+    {
+     if ( !(g_info->tags[i]>tagbuf&&g_info->tags[i]<tagbuf_len)) 
+         free(g_info->tags[i]);
+    }
+        if (tagbuf) {
+        free(tagbuf);
+        tagbuf = NULL;
     }
 
+    // 释放项目相关的内存
+    for (int i = 0; i < g_info->todoCount; i++) {
+        if (g_info->items[i].name) {
+            free(g_info->items[i].name);
+        }
+
+        for (int j = 0; j < g_info->items[i].subtaskCount; j++) {
+            if (g_info->items[i].subtaskList[j]) {
+                free(g_info->items[i].subtaskList[j]);
+            }
+        }
+        if (g_info->items[i].tagList) {
+            free(g_info->items[i].tagList);
+        }
+            }
     if (g_info->items) {
-        for (int i = 0; i < g_info->todoCount; i++) {
-            TodoItem *item = &g_info->items[i];
-            free(item->name);
-            if (item->subtaskList) {
-                for (int j = 0; j < item->subtaskCount; j++) {
-                    free(item->subtaskList[j]);
-                }
-                free(item->subtaskList);
-            }
-            if (item->desc) {
-                free(item->desc);
-            }
-        }
         free(g_info->items);
+        g_info->items = NULL;
     }
-
-    free(g_info);
+    
+    
 }
