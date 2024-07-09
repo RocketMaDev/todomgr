@@ -126,8 +126,37 @@ int AddTodoItem(TodoInfo *g_info, const char *name, const char *subtasks, const 
         g_info->items[g_info->todoCount-1] = *new_item;
         free(new_item);
         return 0;
-       }
+}
 
 int DeleteTodoItem(TodoInfo *g_info, int itemIndex) {
-    
+    if(!g_info || itemIndex < 0 || itemIndex >= g_info->todoCount) {
+        return -1;
+    }
+    free(g_info->items[itemIndex].desc);
+    g_info->items[itemIndex].desc == NULL;
+    free(g_info->items[itemIndex].name);
+    g_info->items[itemIndex].name == NULL;
+    for(int i = itemIndex;i<g_info->todoCount-1;i++) {
+        g_info->items[i] = g_info->items[i+1];
+    }
+    g_info->todoCount--;
+    g_info->items = (TodoItem*)realloc(g_info->items, g_info->todoCount*sizeof(TodoItem));
+    return 0;
 }
+
+int ModifyTodoItem(TodoInfo *g_info, int itemIndex, const char *name, const char *subtasks, 
+        const int *tags,enum Priority priority, time_t startTime, time_t deadline, const char *desc) {
+            if(!g_info || itemIndex < 0 || itemIndex >=g_info->todoCount) {
+                return -1;
+            }
+            free(g_info->items[itemIndex].name);
+            free(g_info->items[itemIndex].desc);
+            g_info->items[itemIndex].name = strdup(name);
+            g_info->items[itemIndex].desc = strdup(desc);
+            g_info->items[itemIndex].deadline = deadline;
+            g_info->items[itemIndex].startTime = startTime;
+            g_info->items[itemIndex].priority = priority;
+            parseSubtasks(subtasks , g_info->items[itemIndex].subtaskList);
+            parseTags(tags , g_info->items[itemIndex].tagList);
+            return 0;
+        }
