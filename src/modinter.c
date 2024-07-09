@@ -13,47 +13,52 @@ void MarkUndone(TodoInfo *g_info, int itemIndex) {
 }
 
 static int cmp_name(const void* a, const void* b) {
+    if(!((TodoItem *)a)->done&&((TodoItem *)b)->done) 
+        return -1;
+    else if(((TodoItem *)a)->done&&!((TodoItem *)b)->done) 
+        return 1;
     return strcmp(((TodoItem *)a)->name, ((TodoItem *)b)->name);
 }
 
 static int cmp_priority(const void* a, const void* b) {
+    if(!((TodoItem *)a)->done&&((TodoItem *)b)->done) 
+        return -1;
+    else if(((TodoItem *)a)->done&&!((TodoItem *)b)->done) 
+        return 1;
     return ((TodoItem *)a)->priority - ((TodoItem *)b)->priority;
 }
 
 static int cmp_starttime(const void* a, const void* b) {
+    if(!((TodoItem *)a)->done&&((TodoItem *)b)->done) 
+        return -1;
+    else if(((TodoItem *)a)->done&&!((TodoItem *)b)->done) 
+        return 1;
     return ((TodoItem *)a)->startTime - ((TodoItem *)b)->startTime;
 }
 
 static int cmp_deadline(const void* a, const void* b) {
+    if(!((TodoItem *)a)->done&&((TodoItem *)b)->done) 
+        return -1;
+    else if(((TodoItem *)a)->done&&!((TodoItem *)b)->done) 
+        return 1;
     return ((TodoItem *)a)->deadline - ((TodoItem *)b)->deadline;
 }
 
-TodoInfo* SmartSort(TodoInfo *g_info) {
-    TodoInfo *sorted_info = (TodoInfo *)malloc(sizeof(TodoInfo));
-    sorted_info->todoCount = g_info->todoCount;
-    sorted_info->items = (TodoItem *)malloc(g_info->todoCount * sizeof(TodoItem));
-
-    memcpy(sorted_info->items, g_info->items, g_info->todoCount * sizeof(TodoItem));
-
-    for (int i = 0; i < sorted_info->todoCount - 1; i++) {
-        for (int j = 0; j < sorted_info->todoCount - i - 1; j++) {
-            if (sorted_info->items[j].deadline > sorted_info->items[j + 1].deadline) {
-                TodoItem temp = sorted_info->items[j];
-                sorted_info->items[j] = sorted_info->items[j + 1];
-                sorted_info->items[j + 1] = temp;
-            } else if (sorted_info->items[j].deadline == sorted_info->items[j + 1].deadline &&
-                       sorted_info->items[j].priority < sorted_info->items[j + 1].priority) {
-                TodoItem temp = sorted_info->items[j];
-                sorted_info->items[j] = sorted_info->items[j + 1];
-                sorted_info->items[j + 1] = temp;
-            }
-        }
+static int cmp_smart(const void* a, const void* b) {
+    if(!((TodoItem *)a)->done && ((TodoItem *)b)->done) 
+        return -1;
+    else if(((TodoItem *)a)->done && !((TodoItem *)b)->done) 
+        return 1;
+    if(((TodoItem *)a)->deadline > ((TodoItem *)b)->deadline) 
+        return 1;
+    if(((TodoItem *)a)->deadline == ((TodoItem *)b)->deadline) {
+        if(((TodoItem *)a)->priority > ((TodoItem *)b)->priority)
+            return 1;
+        else return -1;
     }
-
-    return sorted_info;
 }
 
-void SortTodoInfo(TodoInfo *g_info, enum SortType type) {
+void SortTodoInfo(TodoInfo *g_info,  enum SortType type) {
     curtime = time(NULL);
     switch (type) {
     case NAME :
@@ -76,14 +81,6 @@ void SortTodoInfo(TodoInfo *g_info, enum SortType type) {
     }
 }
 
-char *strdup(const char *str) {
-    char *new_str = (char*)malloc(strlen(str) + 1);
-    if(new_str) {
-        strcpy(new_str , str);
-    }
-    return new_str;
-}
-
 void parseSubtasks(char *subtasksStr , TodoItem *new_item) {
     char *token = strtok(subtasksStr , " ");
     int subtasksCount = 0;
@@ -95,18 +92,7 @@ void parseSubtasks(char *subtasksStr , TodoItem *new_item) {
     new_item->subtaskList = *token;
 }
 
-void parseTags(char *tagsStr , TodoItem *new_item) {
-    char *token = strtok(tagsStr , " ");
-    int tagCount = 0;
-    while(token!=NULL) {
-        strcpy(new_item->tagList[tagCount++] , token);
-        token = strtok(NULL , " ");
-    }
-    new_item->tagCount = tagCount;
-    new_item->tagList = *token;
-}
-
-int AddTodoItem(TodoInfo *g_info, const char *name, const char *subtasks, const char *tags ,
+int AddTodoItem(TodoInfo *g_info, const char *name, const char *subtasks, const int *tags ,
        enum Priority priority, time_t startTime, time_t deadline, const char *desc) {
         if(!g_info||!name||!desc)
             return -1;
@@ -114,10 +100,10 @@ int AddTodoItem(TodoInfo *g_info, const char *name, const char *subtasks, const 
         if(!new_item)
             return -1;
         parseSubtasks(subtasks , new_item);
-        parseTags(tags , new_item);
         new_item->name = strdup(name);
         new_item->desc = strdup(desc);
         new_item->done = false;
+        new_item->tagList = tags;
         new_item->priority = priority;
         new_item->startTime = startTime;
         new_item->deadline = deadline;
