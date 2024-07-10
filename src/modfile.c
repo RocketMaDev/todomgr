@@ -6,8 +6,8 @@
 #include <errno.h>
 #include "modfile.h"
 
-static char *tagbuf;
-static int tagbuf_len;
+static char *tagbuf = NULL;
+static int tagbuf_len = 0;
 // 初始化 TodoInfo 结构
 TodoInfo *InitTodoInfo(void) {
     TodoInfo *info = (TodoInfo *)malloc(sizeof(TodoInfo));
@@ -152,6 +152,7 @@ int WriteTodoFile(TodoInfo *g_info, const char *filepath) {
     
     fwrite(buf,1,BUFSIZE,file);
     fclose(file);
+    free(buf);
     return 0;
 }
 
@@ -163,10 +164,10 @@ void ReleaseTodoInfo(TodoInfo *g_info) {
     }
     for (int i = 0; i < g_info->tagCount; i++)
     {
-     if ( !(g_info->tags[i]>tagbuf&&g_info->tags[i]<tagbuf_len)) 
+     if ( !(g_info->tags[i]>=tagbuf&&g_info->tags[i]<tagbuf+tagbuf_len)) 
          free(g_info->tags[i]);
     }
-        if (tagbuf) {
+    if (tagbuf) {
         free(tagbuf);
         tagbuf = NULL;
     }
@@ -189,6 +190,6 @@ void ReleaseTodoInfo(TodoInfo *g_info) {
         free(g_info->items);
         g_info->items = NULL;
     }
-    
+    free(g_info);
     
 }
