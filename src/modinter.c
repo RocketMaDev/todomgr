@@ -51,11 +51,12 @@ static int cmp_smart(const void* a, const void* b) {
         return 1;
     if(((TodoItem *)a)->deadline > ((TodoItem *)b)->deadline) 
         return 1;
-    if(((TodoItem *)a)->deadline == ((TodoItem *)b)->deadline) {
+    else if(((TodoItem *)a)->deadline == ((TodoItem *)b)->deadline) {
         if(((TodoItem *)a)->priority > ((TodoItem *)b)->priority)
             return 1;
         else return -1;
     }
+    else return -1;
 }
 
 void SortTodoInfo(TodoInfo *g_info,  enum SortType type) {
@@ -146,3 +147,45 @@ int ModifyTodoItem(TodoInfo *g_info, int itemIndex, const char *name, const char
             parseTags(tags , g_info->items[itemIndex].tagList);
             return 0;
         }
+
+int AddTags(TodoInfo *g_info, const int *newTags, int newTagCount) {
+    if(g_info == NULL || newTags == NULL || newTagCount <= 0)
+        return -1;
+    int *newTagList = (int *)malloc((g_info->tagCount + newTagCount)*sizeof(int));
+    if(newTagList == NULL)
+        return -1;
+    for(int i = 0; i<g_info->tagCount; i++) {
+        newTagList[i] = g_info->tags[i];
+    }
+    for(int i = 0; i<newTagCount; i++) {
+        newTagList[g_info->tagCount+i] = newTags[i];
+    }
+    free(g_info->tags);
+    g_info->tags = newTagList;
+    g_info->tagCount += newTagCount;
+    return 0;
+}
+
+int DeleteTags(TodoInfo *g_info, const int *toDeleteTags, int toDeleteTagCount) {
+    int remainingCount = 0;
+    if(g_info == NULL || toDeleteTags == NULL || toDeleteTagCount <= 0)
+        return -1;
+    int *remainingTags = (int *)malloc(g_info->tagCount*sizeof(int));
+    if(remainingTags == NULL)
+        return -1;
+    for(int i = 0; i<g_info->tagCount; i++) {
+        int found = 0;
+        for(int j = 0; j<toDeleteTagCount; j++) {
+            if(toDeleteTags[j] == g_info->tags[i]) {
+                found = 1;
+                break;}
+        }
+        if(!found) {
+            remainingTags[remainingCount++] = g_info->tags[i];
+        }
+    }
+    free(g_info->tags);
+    g_info->tags = remainingTags;
+    g_info->tagCount = remainingCount;
+    return 0;
+}

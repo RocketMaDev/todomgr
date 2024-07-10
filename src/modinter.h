@@ -13,4 +13,6 @@ void SortTodoInfo(TodoInfo *g_info, enum SortType type);
 
 void MarkDone(TodoInfo *g_info, int itemIndex);
 void MarkUndone(TodoInfo *g_info, int itemIndex);
+int AddTags(TodoInfo *g_info, const int *newTags, int newTagCount);
+int DeleteTags(TodoInfo *g_info, const int *toDeleteTags, int toDeleteTagCount);
 #endif
