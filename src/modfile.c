@@ -171,7 +171,6 @@ void ReleaseTodoInfo(TodoInfo *g_info) {
         tagbuf = NULL;
     }
 
-    // 释放项目相关的内存
     for (int i = 0; i < g_info->todoCount; i++) {
         if (g_info->items[i].name) {
             free(g_info->items[i].name);
