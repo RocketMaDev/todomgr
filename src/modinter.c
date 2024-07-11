@@ -81,6 +81,7 @@ void SortTodoInfo(TodoInfo *g_info,  enum SortType type) {
     }
 }
 
+/*
 void parseSubtasks(char *subtasksStr , TodoItem *new_item) {
     char *token = strtok(subtasksStr , " ");
     int subtasksCount = 0;
@@ -91,6 +92,8 @@ void parseSubtasks(char *subtasksStr , TodoItem *new_item) {
     new_item->subtaskCount = subtasksCount;
     new_item->subtaskList = *token;
 }
+*/
+
 
 int AddTodoItem(TodoInfo *g_info, const char *name, const char *subtasks, const int *tags ,
        enum Priority priority, time_t startTime, time_t deadline, const char *desc) {
@@ -99,7 +102,7 @@ int AddTodoItem(TodoInfo *g_info, const char *name, const char *subtasks, const 
         TodoItem *new_item = (TodoItem*)malloc(sizeof(TodoItem));
         if(!new_item)
             return -1;
-        parseSubtasks(subtasks , new_item);
+        //parseSubtasks(subtasks , new_item);
         new_item->name = strdup(name);
         new_item->desc = strdup(desc);
         new_item->done = false;
@@ -147,39 +150,34 @@ int ModifyTodoItem(TodoInfo *g_info, int itemIndex, const char *name, const char
             return 0;
         }
 
-int AddTags(TodoInfo *g_info, const char newTags) {
+int AddTag(TodoInfo *g_info, const char *newTag) {
     int newTagCount = g_info->tagCount + 1;
-    if(g_info == NULL || newTags == NULL )
+    if(g_info == NULL || newTag == NULL )
         return -1;
-    char *newTagList = (char *)malloc(newTagCount*sizeof(char));
+    char **newTagList = (char **)malloc(newTagCount*sizeof(char*));
     if(newTagList == NULL)
         return -1;
     for(int i = 0; i<g_info->tagCount; i++) {
         newTagList[i] = g_info->tags[i];
     }
-    newTagList[g_info->tagCount + 1] = newTags;
+    newTagList[g_info->tagCount + 1] = newTag;
     free(g_info->tags);
     g_info->tags = newTagList;
     g_info->tagCount = newTagCount;
     return 0;
 }
 
-int DeleteTags(TodoInfo *g_info, const int toDeleteTags) {
+int DeleteTag(TodoInfo *g_info, int toDeleteTag) {
     int remainingCount =  g_info->tagCount - 1;
-    int j = 0;
-    if(g_info == NULL || toDeleteTags == NULL || remainingCount <= 0)
+    if(g_info == NULL || toDeleteTag == NULL || remainingCount <= 0)
         return -1;
-    char *remainingTags = (char *)malloc(remainingCount*sizeof(char));
+    char **remainingTags = (char **)malloc(remainingCount*sizeof(char*));
     if(remainingTags == NULL)
         return -1;
-    for(j = 0; j<g_info->tagCount; j++) {
-        if(toDeleteTags == g_info->tags[j]) 
-            break;
-    }
-    for(int i = 0; i<j; i++) {
+    for(int i = 0; i<toDeleteTag; i++) {
         remainingTags[i] = g_info->tags[i];
     }
-    for(int i = j;i<remainingCount; i++) {
+    for(int i = toDeleteTag;i<remainingCount; i++) {
         remainingTags[i] = g_info->tags[i+1];
     }
     free(g_info->tags);
