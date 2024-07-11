@@ -145,6 +145,7 @@ int ModifyTodoItem(TodoInfo *g_info, int itemIndex, const char *name, const char
             g_info->items[itemIndex].deadline = deadline;
             g_info->items[itemIndex].startTime = startTime;
             g_info->items[itemIndex].priority = priority;
+            g_info->items[itemIndex].tagList = tags;
             //parseSubtasks(subtasks , g_info->items[itemIndex].subtaskList);
             return 0;
         }
