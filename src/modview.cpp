@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "modview.hpp"
-#include "i18n.h"
+#include "modi18n.h"
 #include "modfile.h"
 
 using namespace ftxui;
@@ -33,8 +33,13 @@ static inline void mktimestr(char *dest, time_t cmp) {
         strftime(dest, TIME_STR_MAX, TIME_FMT_LONG, timetm);
 }
 
-Element MainView::RenderView(ScreenInteractive *screen) {
-    int namelen = 4, subtasklen = 7, startLen = 5, ddlLen = 3, descLen = 4, tagLen = 3;
+Element MainView::Render(void) {
+    int namelen = strlen(GETTEXT(NAME_HEADER)), 
+        subtasklen = strlen(GETTEXT(SUBTASK_HEADER)), 
+        startLen = strlen(GETTEXT(START_TIME_HEADER)), 
+        ddlLen = strlen(GETTEXT(DEADLINE_HEADER)), 
+        descLen = strlen(GETTEXT(DESCRIPTION_HEADER)), 
+        tagLen = strlen(GETTEXT(TAG_HEADER));
 
     // calc time str
     vector<string> startList, ddlList;

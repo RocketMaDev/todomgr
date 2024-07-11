@@ -1,6 +1,10 @@
 #ifndef __MODINTER_H__
 #define __MODINTER_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <time.h>
 #include "modfile.h"
 
@@ -13,6 +17,11 @@ void SortTodoInfo(TodoInfo *g_info, enum SortType type);
 
 void MarkDone(TodoInfo *g_info, int itemIndex);
 void MarkUndone(TodoInfo *g_info, int itemIndex);
-int AddTags(TodoInfo *g_info, const char newTags);
-int DeleteTags(TodoInfo *g_info, const int toDeleteTags);
+int AddTag(TodoInfo *g_info, const char *newTag);
+int DeleteTag(TodoInfo *g_info, int toDeleteTag);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

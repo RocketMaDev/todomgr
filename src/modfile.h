@@ -1,5 +1,10 @@
 #ifndef __MODFILE_H__
 #define __MODFILE_H__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <time.h>
 #include <stdbool.h>
 
@@ -69,4 +74,8 @@ void ReleaseTodoInfo(TodoInfo *g_info);
 
 // static void acquireFileLock(void);
 // static void releaseFileLock(void);
+#ifdef __cplusplus
+}
+#endif
+
 #endif
