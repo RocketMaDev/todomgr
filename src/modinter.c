@@ -145,8 +145,7 @@ int ModifyTodoItem(TodoInfo *g_info, int itemIndex, const char *name, const char
             g_info->items[itemIndex].deadline = deadline;
             g_info->items[itemIndex].startTime = startTime;
             g_info->items[itemIndex].priority = priority;
-            parseSubtasks(subtasks , g_info->items[itemIndex].subtaskList);
-            parseTags(tags , g_info->items[itemIndex].tagList);
+            //parseSubtasks(subtasks , g_info->items[itemIndex].subtaskList);
             return 0;
         }
 
@@ -169,7 +168,7 @@ int AddTag(TodoInfo *g_info, const char *newTag) {
 
 int DeleteTag(TodoInfo *g_info, int toDeleteTag) {
     int remainingCount =  g_info->tagCount - 1;
-    if(g_info == NULL || toDeleteTag == NULL || remainingCount <= 0)
+    if(g_info == NULL || remainingCount <= 0)
         return -1;
     char **remainingTags = (char **)malloc(remainingCount*sizeof(char*));
     if(remainingTags == NULL)
