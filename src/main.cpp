@@ -9,6 +9,7 @@
 #include <ftxui/screen/color.hpp>
 #include <ftxui/screen/screen.hpp>
 #include <memory>
+#include <utility>
 
 #include "i18n.h"
 #include "modfile.h"
@@ -44,7 +45,8 @@ int main(void) {
     screen->TrackMouse(false); // Disable mouse
 
     MainView view(info);
-    screen->Loop(std::make_shared<ComponentBase>(view));
+    auto renderer = Renderer([&]{return view.Render();});
+    screen->Loop(renderer);
     ReleaseTodoInfo(info);
     return 0;
 }
