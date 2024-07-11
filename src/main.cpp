@@ -11,23 +11,22 @@
 #include <memory>
 #include <utility>
 
-#include "i18n.h"
-#include "modfile.h"
+#include "modi18n.h"
 #include "modview.hpp"
+#include "modfile.h"
 
 using namespace ftxui;
 
 ScreenInteractive *screen;
 static TodoInfo *info;
 
-
 int main(void) {
     setlocale(LC_ALL, "");
     const char *orig = setlocale(LC_ALL, NULL);
     if (strstr(orig, "zh_CN") || strstr(orig, "Simplified")) 
-        zh = 1;
+        *GetLanguage() = 1;
     else
-        zh = 0;
+        *GetLanguage() = 0;
     setlocale(LC_ALL, "zh_CN.UTF-8");
 
     puts("Loading...");
