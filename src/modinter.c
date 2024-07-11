@@ -95,7 +95,7 @@ void parseSubtasks(char *subtasksStr , TodoItem *new_item) {
 */
 
 
-int AddTodoItem(TodoInfo *g_info, const char *name, const char *subtasks, const int *tags ,
+int AddTodoItem(TodoInfo *g_info, const char *name, const char **subtasks, int subtaskCount, const int *tags ,
        enum Priority priority, time_t startTime, time_t deadline, const char *desc) {
         if(!g_info||!name||!desc)
             return -1;
@@ -183,4 +183,22 @@ int DeleteTag(TodoInfo *g_info, int toDeleteTag) {
     free(g_info->tags);
     g_info->tags = remainingTags;
     g_info->tagCount = remainingCount;
+//重新为tagList分配空间
+    for(int i = 0; i<g_info->todoCount; i++) {
+    int *tagList ;
+        for(int j = 0; j<g_info->items[i].tagCount; j++) {
+            if(tagList[j] == toDeleteTag) {
+                g_info->items[i].tagCount--;
+                break;
+            }
+        }
+        for(int j = 0; j<g_info->items[i].tagCount; i++) {
+            if(g_info->items[i].tagList[j] >= toDeleteTag) {
+                tagList[j] = g_info->items[i].tagList[j+1]-1 ;
+            }
+            else
+            tagList[j] = g_info->items[i].tagList[j];
+        }
     }
+    return 0;
+}
