@@ -8,6 +8,7 @@
 
 static char *tagbuf = NULL;
 static int tagbuf_len = 0;
+bool fileIsOpened = false;
 // 初始化 TodoInfo 结构
 TodoInfo *InitTodoInfo(void) {
     TodoInfo *info = (TodoInfo *)malloc(sizeof(TodoInfo));
@@ -26,9 +27,7 @@ TodoInfo *InitTodoInfo(void) {
     return info;
 }
 
-// 读取 Todo 文件
 int ReadTodoFile(TodoInfo *g_info, const char *filepath) {
-    // 打开文件
     FILE *file = fopen(filepath, "rb");
     if (file == NULL) {
         return errno;
@@ -59,7 +58,7 @@ int ReadTodoFile(TodoInfo *g_info, const char *filepath) {
     tagbuf = malloc(tagbuf_len);
     memcpy(tagbuf, cursor, tagbuf_len);
     for (int i = 0; i < fTodo.todocnt; i++)
-        tagitem[i] = tagitem[i] - buf + tagbuf;
+        tagitem[i] = tagitem[i] - (char *)buf + tagbuf;
     g_info->tags = tagitem;
     g_info->tagCount = fTodo.tagcnt;
     cursor = tagend;
@@ -134,7 +133,7 @@ int WriteTodoFile(TodoInfo *g_info, const char *filepath) {
         }
         *(unsigned short*) cursor = g_info->items[i].tagCount;
         cursor += sizeof(short);
-        for (int j = 0; j < g_info->items[i].tagCount ; i++)
+        for (int j = 0; j < g_info->items[i].tagCount ; j++)
         {
            *(unsigned short*) cursor = g_info->items[i].tagList[j];
             cursor += sizeof(short);
@@ -193,3 +192,4 @@ void ReleaseTodoInfo(TodoInfo *g_info) {
     free(g_info);
     
 }
+
