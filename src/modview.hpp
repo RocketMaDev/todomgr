@@ -17,7 +17,7 @@ class MainView : public ftxui::ComponentBase {
     int length;
   public:
     MainView(TodoInfo *g_info): info(g_info) {}
-    ftxui::Element RenderView(ftxui::ScreenInteractive *screen);
+    ftxui::Element Render(void) override;
     bool OnEvent(ftxui::Event event) override;
 };
 
