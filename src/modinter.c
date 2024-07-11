@@ -60,7 +60,6 @@ static int cmp_smart(const void* a, const void* b) {
 }
 
 void SortTodoInfo(TodoInfo *g_info,  enum SortType type) {
-    curtime = time(NULL);
     switch (type) {
     case NAME :
         qsort(g_info->items, g_info->todoCount, sizeof(TodoItem), cmp_name);
@@ -148,44 +147,42 @@ int ModifyTodoItem(TodoInfo *g_info, int itemIndex, const char *name, const char
             return 0;
         }
 
-int AddTags(TodoInfo *g_info, const int *newTags, int newTagCount) {
-    if(g_info == NULL || newTags == NULL || newTagCount <= 0)
+int AddTags(TodoInfo *g_info, const char newTags) {
+    int newTagCount = g_info->tagCount + 1;
+    if(g_info == NULL || newTags == NULL )
         return -1;
-    int *newTagList = (int *)malloc((g_info->tagCount + newTagCount)*sizeof(int));
+    char *newTagList = (char *)malloc(newTagCount*sizeof(char));
     if(newTagList == NULL)
         return -1;
     for(int i = 0; i<g_info->tagCount; i++) {
         newTagList[i] = g_info->tags[i];
     }
-    for(int i = 0; i<newTagCount; i++) {
-        newTagList[g_info->tagCount+i] = newTags[i];
-    }
+    newTagList[g_info->tagCount + 1] = newTags;
     free(g_info->tags);
     g_info->tags = newTagList;
-    g_info->tagCount += newTagCount;
+    g_info->tagCount = newTagCount;
     return 0;
 }
 
-int DeleteTags(TodoInfo *g_info, const int *toDeleteTags, int toDeleteTagCount) {
-    int remainingCount = 0;
-    if(g_info == NULL || toDeleteTags == NULL || toDeleteTagCount <= 0)
+int DeleteTags(TodoInfo *g_info, const int toDeleteTags) {
+    int remainingCount =  g_info->tagCount - 1;
+    int j = 0;
+    if(g_info == NULL || toDeleteTags == NULL || remainingCount <= 0)
         return -1;
-    int *remainingTags = (int *)malloc(g_info->tagCount*sizeof(int));
+    char *remainingTags = (char *)malloc(remainingCount*sizeof(char));
     if(remainingTags == NULL)
         return -1;
-    for(int i = 0; i<g_info->tagCount; i++) {
-        int found = 0;
-        for(int j = 0; j<toDeleteTagCount; j++) {
-            if(toDeleteTags[j] == g_info->tags[i]) {
-                found = 1;
-                break;}
-        }
-        if(!found) {
-            remainingTags[remainingCount++] = g_info->tags[i];
-        }
+    for(j = 0; j<g_info->tagCount; j++) {
+        if(toDeleteTags == g_info->tags[j]) 
+            break;
+    }
+    for(int i = 0; i<j; i++) {
+        remainingTags[i] = g_info->tags[i];
+    }
+    for(int i = j;i<remainingCount; i++) {
+        remainingTags[i] = g_info->tags[i+1];
     }
     free(g_info->tags);
     g_info->tags = remainingTags;
     g_info->tagCount = remainingCount;
-    return 0;
-}
+    }
