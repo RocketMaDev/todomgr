@@ -8,7 +8,7 @@
 
 static char *tagbuf = NULL;
 static int tagbuf_len = 0;
-bool fileIsOpened = false;
+
 // 初始化 TodoInfo 结构
 TodoInfo *InitTodoInfo(void) {
     TodoInfo *info = (TodoInfo *)malloc(sizeof(TodoInfo));
@@ -57,19 +57,20 @@ int ReadTodoFile(TodoInfo *g_info, const char *filepath) {
     tagbuf_len = tagend - cursor;
     tagbuf = malloc(tagbuf_len);
     memcpy(tagbuf, cursor, tagbuf_len);
-    for (int i = 0; i < fTodo.todocnt; i++)
-        tagitem[i] = tagitem[i] - (char *)buf + tagbuf;
+    for (int i = 0; i < fTodo.tagcnt; i++)
+        tagitem[i] = tagitem[i] -(char *)cursor + tagbuf;
     g_info->tags = tagitem;
     g_info->tagCount = fTodo.tagcnt;
     cursor = tagend;
 
     // read Item
-    fTodo.todocnt=*(int *)cursor;
+    g_info->todoCount = fTodo.todocnt=*(int *)cursor;
+    cursor+=sizeof(int);
     g_info->items =malloc(sizeof(TodoItem)*fTodo.todocnt);
     for (int i = 0; i < fTodo.todocnt; i++) {
         g_info->items[i].name = strdup(cursor);
         cursor += strlen(cursor) + 1;
-        g_info->items[i].subtaskCount = *(unsigned short *)cursor;
+        g_info->items[i].subtaskCount = *(unsigned char *)cursor;
         cursor += sizeof(unsigned char);
         g_info->items[i].subtaskList = malloc(sizeof(char *) * g_info->items[i].subtaskCount);
         for (int j = 0; j < g_info->items[i].subtaskCount; j++) {
@@ -80,12 +81,14 @@ int ReadTodoFile(TodoInfo *g_info, const char *filepath) {
         cursor += sizeof(unsigned short);
         g_info->items[i].tagCount = tagCount;
         g_info->items[i].tagList = malloc(sizeof(unsigned short) * tagCount);
-        for (int j = 1; j <= tagCount; j++) {
+        for (int j = 0; j < tagCount; j++) {
             g_info->items[i].tagList[j] = *(unsigned short *)cursor;
             cursor += sizeof(unsigned short);
         }
-        *(&g_info->items[i].done) = *(unsigned char *)cursor;
+        unsigned char tmp_info = *(unsigned char *)cursor;
         cursor += sizeof(unsigned char);
+        g_info->items[i].done = tmp_info & 1;
+        g_info->items[i].priority = (tmp_info & 0xfe) >> 1;
 
         g_info->items[i].startTime = *(time_t *)cursor;
         cursor += sizeof(time_t);
