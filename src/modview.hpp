@@ -12,6 +12,7 @@
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
 #include <iomanip>
+#include <list>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -66,6 +67,19 @@ class DetailView : public ftxui::ComponentBase {
   public:
     DetailView(TodoInfo *g_info);
     void reset(TodoItem *itemIn);
+    ftxui::Element Render(void) override;
+    bool OnEvent(ftxui::Event event) override;
+};
+
+class TagView : public ftxui::ComponentBase {
+  private:
+    std::string newTag;
+    ftxui::Component newInput;
+    std::list<std::string> tags;
+    TodoInfo *info;
+    int selected;
+  public:
+    TagView(TodoInfo *g_info);
     ftxui::Element Render(void) override;
     bool OnEvent(ftxui::Event event) override;
 };

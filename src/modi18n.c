@@ -50,7 +50,10 @@ const char *i18nstr[][2] = {
     EXPAND_STR(DEADLINE_SORT, "Deadline", "截止时间"),
     EXPAND_STR(LANGUAGE_STR, "Language:", "语言："),
     EXPAND_STR(ENGLISH_STR, "English", "英语"),
-    EXPAND_STR(CHINESE_STR, "Chinese", "中文")
+    EXPAND_STR(CHINESE_STR, "Chinese", "中文"),
+    EXPAND_STR(NEW_TAG_PROMPT, "Input a new tag...", "新增一条标签..."),
+    EXPAND_STR(NO_TAG_PROMPT, "No tag yet, plz add one", "还没有标签"),
+    EXPAND_STR(DELETE_TAG_PROMPT, "Add if not exist, delete if exist", "有则删，无则加")
 };
 
 int *GetLanguage(void) {

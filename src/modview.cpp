@@ -36,6 +36,9 @@ static inline void mktimestr(char *dest, time_t cmp) {
         strftime(dest, TIME_STR_MAX, TIME_FMT_LONG, timetm);
 }
 
+//////////////////////////////////////////////////////////////////////
+//                          MainView Part                           //
+//////////////////////////////////////////////////////////////////////
 Element MainView::Render(void) {
     int namelen = strlen(GETTEXT(NAME_HEADER)), 
         subtasklen = strlen(GETTEXT(SUBTASK_HEADER)), 
@@ -202,6 +205,10 @@ bool MainView::OnEvent(Event event) {
         itemHandle = nullptr;
         return true;
     }
+    if (event == Event::Character('v') && !(state & TAG_VIEW_DISPLAY)) {
+        state |= TAG_VIEW_DISPLAY;
+        return true;
+    }
     if (event == Event::Character(' ') && info->todoCount) {
         if (info->items[selected].done)
             MarkUndone(info, selected);
@@ -211,6 +218,10 @@ bool MainView::OnEvent(Event event) {
     }
     if ((event == Event::Delete || event == Event::Character('d')) && info->todoCount) {
         DeleteTodoItem(info, selected);
+        return true;
+    }
+    if (event == Event::Character('w')) {
+        WriteTodoFile(info, "tododb");
         return true;
     }
     int old_selected = selected;
@@ -228,9 +239,12 @@ bool MainView::OnEvent(Event event) {
     return false;
 }
 
+//////////////////////////////////////////////////////////////////////
+//                         DetailView Part                          //
+//////////////////////////////////////////////////////////////////////
 static ftxui::InputOption OneLine(void) {
     ftxui::InputOption base = ftxui::InputOption::Default();
-    base.multiline = false;
+    base.multiline = false; // multiline causes SIGSEGV, kinda weird
     return base;
 }
 
@@ -248,13 +262,14 @@ DetailView::DetailView(TodoInfo *g_info): info(g_info), checkStates(nullptr),
         GETTEXT(ORDINARY_PRIORITY)
     };
     priorityToggle = ftxui::Toggle(&priorityStrings, &priority);
-    confirmButton = ftxui::Button(GETTEXT(OK), [&] {
+    confirmButton = ftxui::Button(GETTEXT(OK), [&] { // NOTE one lambda here
         struct tm tmp;
         time_t startTime;
         time_t deadline;
         if (start.empty())
             startTime = 0;
         else {
+            // time str to time_t; no error handling due to lack of time
             std::stringstream startStream(start);
             startStream >> std::get_time(&tmp, TIME_FMT_LONG);
             startTime = mktime(&tmp);
@@ -273,6 +288,7 @@ DetailView::DetailView(TodoInfo *g_info): info(g_info), checkStates(nullptr),
                 if (checkStates[i])
                 tagList.push_back(i);
 
+        // concat subtaskList into one string
         std::vector<std::string> subtaskList;
         std::string token;
         std::stringstream stream(subtask);
@@ -307,8 +323,8 @@ DetailView::DetailView(TodoInfo *g_info): info(g_info), checkStates(nullptr),
 
 void DetailView::reset(TodoItem *itemIn) {
     item = itemIn;
-    delete [] checkStates;
-    checkStates = new bool[info->tagCount];
+    delete [] checkStates;                  // as we don't know how long the array will be, 
+    checkStates = new bool[info->tagCount]; // so we need to free it and realloc
     memset(checkStates, 0, info->tagCount * sizeof(bool)); // clear bool field so it can be switched
     checkboxes = vector<Component>(info->tagCount);
     checkboxContainer->DetachAllChildren();
@@ -317,8 +333,9 @@ void DetailView::reset(TodoItem *itemIn) {
         checkboxContainer->Add(checkboxes[i]);
     }
     if (itemIn) {
-        name.assign(itemIn->name);
+        name.assign(itemIn->name); // use assign to prevent reference alternate
 
+        // tokenize subtask field with delimiter |
         string mergeOfSubtask;
         for (int i = 0; i < itemIn->subtaskCount - 1; i++) {
             mergeOfSubtask += itemIn->subtaskList[i];
@@ -393,4 +410,54 @@ bool DetailView::OnEvent(Event event) {
         return true;
     }
     return container->OnEvent(event);
+}
+
+//////////////////////////////////////////////////////////////////////
+//                           TagView Part                           //
+//////////////////////////////////////////////////////////////////////
+TagView::TagView(TodoInfo *g_info): info(g_info), selected(0),
+        newInput(Input(&newTag, GETTEXT(NEW_TAG_PROMPT), OneLine())){
+    for (int i = 0; i < info->tagCount; i++)
+        tags.push_back(info->tags[i]);
+}
+
+Element TagView::Render(void) {
+    Elements list;
+    for (auto &it : tags) {
+        list.push_back(text(it));
+    }
+    if (list.empty()) {
+        list.push_back(text(GETTEXT(NO_TAG_PROMPT)));
+    }
+    newInput->TakeFocus();
+    return window(text(GETTEXT(TAG_HEADER)), vbox({
+        vbox(list) | yframe,
+        separator(),
+        newInput->Render(),
+        text(GETTEXT(DELETE_TAG_PROMPT)) | color(Color::Blue) | hcenter
+    })) | center;
+}
+
+bool TagView::OnEvent(Event event) {
+    if (event == Event::Escape && (state & TAG_VIEW_DISPLAY)) {
+        state &= ~TAG_VIEW_DISPLAY;
+        return true;
+    }
+    if (event == Event::Return && (state & TAG_VIEW_DISPLAY)) {
+        if (newTag.empty())
+            return true;
+        int idx = 0;
+        for (auto &it : tags) {
+            if (it == newTag) {
+                tags.remove(newTag);
+                DeleteTag(info, idx);
+                return true;
+            }
+            idx++;
+        }
+        tags.push_back(newTag);
+        AddTag(info, newTag.c_str());
+        return true;
+    }
+    return newInput->OnEvent(event);
 }

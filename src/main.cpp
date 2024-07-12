@@ -82,12 +82,14 @@ static void manageComponents(void) {
 
     auto mainComponent = make_shared<MainView>(info, screen);
     auto detailComponent = make_shared<DetailView>(info);
+    auto tagComponent = make_shared<TagView>(info);
 
     auto ultimateContainer = Container::Vertical({
         mainComponent,
         settingsComponent,
         exitComponent,
-        detailComponent
+        detailComponent,
+        tagComponent
     });
     puts("Starting FTXUI instance...");
     screen->Loop(Renderer(ultimateContainer, [&] {
@@ -130,6 +132,13 @@ static void manageComponents(void) {
             return dbox({
                 mainComponent->Render(),
                 detailComponent->Render()
+            });
+        }
+        if (state & TAG_VIEW_DISPLAY) {
+            tagComponent->TakeFocus();
+            return dbox({
+                mainComponent->Render(),
+                tagComponent->Render()
             });
         }
         if (state & DETAIL_SWITCH_STATE)
