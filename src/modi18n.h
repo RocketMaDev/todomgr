@@ -5,7 +5,6 @@
 extern "C" {
 #endif
 
-#define TOTAL 30
 int *GetLanguage(void);
 const char *GETTEXT(int idx);
 
@@ -22,6 +21,14 @@ const char *GETTEXT(int idx);
 #define DESCRIPTION_HEADER 10
 #define NO_ITEM_PROMPT 11
 #define MAIN_TITLE 12
+#define ADD_TASK_HINT 13
+#define DELETE_TASK_HINT 14
+#define VIEW_TAG_HINT 15
+#define SWITCH_STATE_HINT 16
+#define VIEW_DETAIL_HINT 17
+#define EXIT_HINT 18
+#define EDIT_SETTING_HINT 19
+#define HINT_TITLE 20
 
 #ifdef __cplusplus
 }

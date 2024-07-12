@@ -19,6 +19,7 @@ using namespace ftxui;
 
 ScreenInteractive *screen;
 static TodoInfo *info;
+static void manageComponents(void);
 
 int main(void) {
     setlocale(LC_ALL, "");
@@ -43,9 +44,39 @@ int main(void) {
     screen = &main_screen;
     screen->TrackMouse(false); // Disable mouse
 
-    MainView view(info);
-    auto renderer = Renderer([&]{return view.Render();});
-    screen->Loop(renderer);
+    manageComponents();
+    puts("Releasing");
     ReleaseTodoInfo(info);
     return 0;
+}
+
+static void manageComponents(void) {
+    auto btnYes = Button(GETTEXT(YES), screen->ExitLoopClosure());
+    auto btnNo = Button(GETTEXT(NO), [&] { state &= ~EXIT_DISPLAY; });
+    auto exitComponent = Container::Horizontal({
+        btnYes,
+        btnNo
+    });
+
+    auto mainComponent = std::make_shared<MainView>(info, screen);
+
+    auto ultimateContainer = Container::Vertical({
+        mainComponent,
+        exitComponent
+    });
+    screen->Loop(Renderer(ultimateContainer, [&] {
+        if (state & EXIT_DISPLAY) {
+            exitComponent->TakeFocus();
+            return dbox({
+                mainComponent->Render(),
+                window(text(GETTEXT(CONFIRM_EXIT)), hbox({
+                    btnYes->Render(),
+                    separator(),
+                    btnNo->Render()
+                })) | center
+            });
+        }
+        mainComponent->TakeFocus();
+        return mainComponent->Render();
+    }));
 }
