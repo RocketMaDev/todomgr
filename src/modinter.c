@@ -95,7 +95,7 @@ void parseSubtasks(char *subtasksStr , TodoItem *new_item) {
 */
 
 
-int AddTodoItem(TodoInfo *g_info, const char *name, const char **subtasks, int subtaskCount, const int *tags ,
+int AddTodoItem(TodoInfo *g_info, const char *name, const char **subtasks, int subtaskCount, const int *tags ,int tagCount,
        enum Priority priority, time_t startTime, time_t deadline, const char *desc) {
         if(!g_info||!name||!desc)
             return -1;
@@ -107,6 +107,7 @@ int AddTodoItem(TodoInfo *g_info, const char *name, const char **subtasks, int s
         new_item->desc = strdup(desc);
         new_item->done = false;
         new_item->tagList = tags;
+        new_item->tagCount+=tagCount ;
         new_item->priority = priority;
         new_item->startTime = startTime;
         new_item->deadline = deadline;
@@ -133,8 +134,8 @@ int DeleteTodoItem(TodoInfo *g_info, int itemIndex) {
     return 0;
 }
 
-int ModifyTodoItem(TodoInfo *g_info, int itemIndex, const char *name, const char *subtasks, 
-        const int *tags,enum Priority priority, time_t startTime, time_t deadline, const char *desc) {
+int ModifyTodoItem(TodoInfo *g_info, int itemIndex, const char *name, const char *subtasks, int subtaskCount,
+        const int *tags, int tagCount, enum Priority priority, time_t startTime, time_t deadline, const char *desc) {
             if(!g_info || itemIndex < 0 || itemIndex >=g_info->todoCount) {
                 return -1;
             }
@@ -146,6 +147,7 @@ int ModifyTodoItem(TodoInfo *g_info, int itemIndex, const char *name, const char
             g_info->items[itemIndex].startTime = startTime;
             g_info->items[itemIndex].priority = priority;
             g_info->items[itemIndex].tagList = tags;
+            g_info->items[itemIndex].tagCount+=tagCount;
             //parseSubtasks(subtasks , g_info->items[itemIndex].subtaskList);
             return 0;
         }
