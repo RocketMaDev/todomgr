@@ -10,7 +10,6 @@
 static char *tagbuf = NULL;
 static int tagbuf_len = 0;
 
-// 初始化 TodoInfo 结构
 TodoInfo *InitTodoInfo(void) {
     TodoInfo *info = (TodoInfo *)malloc(sizeof(TodoInfo));
     if (info == NULL)
@@ -156,7 +155,6 @@ int WriteTodoFile(TodoInfo *g_info, const char *filepath) {
     return 0;
 }
 
-// 释放 TodoInfo 占用的内存
 void ReleaseTodoInfo(TodoInfo *g_info) {
     if (g_info == NULL)
         return;
