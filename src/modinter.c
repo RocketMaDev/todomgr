@@ -185,19 +185,17 @@ int DeleteTag(TodoInfo *g_info, int toDeleteTag) {
     g_info->tagCount = remainingCount;
 //重新为tagList分配空间
     for(int i = 0; i<g_info->todoCount; i++) {
-    int *tagList ;
+    int *tagList = g_info->items[i].tagList;
         for(int j = 0; j<g_info->items[i].tagCount; j++) {
             if(tagList[j] == toDeleteTag) {
                 g_info->items[i].tagCount--;
                 break;
             }
         }
-        for(int j = 0; j<g_info->items[i].tagCount; i++) {
-            if(g_info->items[i].tagList[j] >= toDeleteTag) {
-                tagList[j] = g_info->items[i].tagList[j+1]-1 ;
+        for(int j = 0; j<g_info->items[i].tagCount; j++) {
+            if(tagList[j] >= toDeleteTag) {
+                tagList[j] = tagList[j+1]-1 ;
             }
-            else
-            tagList[j] = g_info->items[i].tagList[j];
         }
     }
     return 0;
