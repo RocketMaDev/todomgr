@@ -108,7 +108,9 @@ int AddTodoItem(TodoInfo *g_info, const char *name, const char **subtasks, int s
         new_item->done = false;
         new_item->tagList = tags;
         new_item->tagCount+=tagCount ;
-        new_item->subtaskList = subtasks;
+        for(int i = 0; i<subtaskCount; i++){
+        new_item->subtaskList[i] = subtasks[i];
+        }
         new_item->subtaskCount = subtaskCount;
         new_item->priority = priority;
         new_item->startTime = startTime;
@@ -150,7 +152,9 @@ int ModifyTodoItem(TodoInfo *g_info, int itemIndex, const char *name, const char
             g_info->items[itemIndex].priority = priority;
             g_info->items[itemIndex].tagList = tags;
             g_info->items[itemIndex].tagCount+=tagCount;
-            g_info->items[itemIndex].subtaskList = subtasks;
+            for(int i = 0; i<subtaskCount; i++){
+            g_info->items[itemIndex].subtaskList[i] = subtasks[i];
+            }
             g_info->items[itemIndex].subtaskCount = subtaskCount;
             return 0;
         }
