@@ -7,6 +7,7 @@
 #include <ctime>
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/component_base.hpp>
+#include <ftxui/component/component_options.hpp>
 #include <ftxui/component/event.hpp>
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
@@ -23,6 +24,7 @@ extern int state;
 #define TAG_VIEW_DISPLAY 0x4
 #define SAVE_DONE_DISPLAY 0x8
 #define SETTING_DISPLAY 0x10
+#define DETAIL_SWITCH_STATE 0x20
 
 class MainView : public ftxui::ComponentBase {
   private:
@@ -30,11 +32,13 @@ class MainView : public ftxui::ComponentBase {
     int selected;
     int length;
     ftxui::ScreenInteractive *screen;
+    TodoItem *itemHandle;
   public:
     MainView(TodoInfo *g_info, ftxui::ScreenInteractive *g_screen): info(g_info), 
-        screen(g_screen) {}
+        screen(g_screen), selected(0) {}
     ftxui::Element Render(void) override;
     bool OnEvent(ftxui::Event event) override;
+    TodoItem *getTodoItem(void) { return itemHandle; }
 };
 
 class DetailView : public ftxui::ComponentBase {
@@ -60,61 +64,7 @@ class DetailView : public ftxui::ComponentBase {
     ftxui::Component container; // overall container
     TodoItem *item;
   public:
-    DetailView(TodoInfo *g_info): info(g_info), checkStates(nullptr), 
-            nameInput(ftxui::Input(name)),
-            subtaskInput(ftxui::Input(subtask)),
-            startInput(ftxui::Input(start)),
-            ddlInput(ftxui::Input(ddl)),
-            descInput(ftxui::Input(desc)) {
-        priorityStrings = {
-            GETTEXT(CRITIAL_PRIORITY),
-            GETTEXT(IMPORTANT_PRIORITY),
-            GETTEXT(NORMAL_PRIORITY),
-            GETTEXT(ORDINARY_PRIORITY)
-        };
-        priorityToggle = ftxui::Toggle(&priorityStrings, &priority);
-        confirmButton = ftxui::Button(GETTEXT(OK), [&] {
-            struct tm tmp;
-            time_t startTime;
-            time_t deadline;
-            if (start.empty())
-                startTime = 0;
-            else {
-                std::stringstream startStream(start);
-                startStream >> std::get_time(&tmp, TIME_FMT_LONG);
-                startTime = mktime(&tmp);
-            }
-            if (ddl.empty())
-                deadline = 0;
-            else {
-                std::stringstream ddlStream(ddl);
-                ddlStream >> std::get_time(&tmp, TIME_FMT_LONG);
-                deadline = mktime(&tmp);
-            };
-
-            state &= ~DETAIL_VIEW_DISPLAY;
-            std::vector<int> tagList;
-            for (int i = 0; i < info->tagCount; i++)
-                if (checkStates[i])
-                    tagList.push_back(i);
-
-            std::vector<std::string> subtaskList;
-            std::string token;
-            std::stringstream stream(subtask);
-            while (std::getline(stream, token, '|'))
-                subtaskList.push_back(token);
-            const char **subtasks = new const char *[subtaskList.size()];
-            for (int i = 0; i < subtaskList.size(); i++)
-                subtasks[i] = subtaskList[i].c_str();
-
-            if (!item)
-                AddTodoItem(info, name.c_str(), subtasks, subtaskList.size(),
-                        tagList.data(), tagList.size(), priority, startTime, deadline, desc.c_str());
-            else
-                ModifyTodoItem(info, item - info->items, name.c_str(), subtasks, subtaskList.size(),
-                        tagList.data(), tagList.size(), priority, startTime, deadline, desc.c_str());
-        });
-    }
+    DetailView(TodoInfo *g_info);
     void reset(TodoItem *itemIn);
     ftxui::Element Render(void) override;
     bool OnEvent(ftxui::Event event) override;

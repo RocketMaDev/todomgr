@@ -14,6 +14,7 @@
 #include "modview.hpp"
 #include "modi18n.h"
 #include "modfile.h"
+#include "modinter.h"
 
 using namespace ftxui;
 using namespace std;
@@ -187,11 +188,31 @@ bool MainView::OnEvent(Event event) {
         state |= EXIT_DISPLAY;
         return true;
     }
-    if (event == Event::Return && !(state & DETAIL_VIEW_DISPLAY)) {
+    if (event == Event::Return && !(state & DETAIL_VIEW_DISPLAY) && info->todoCount) {
         state |= DETAIL_VIEW_DISPLAY;
+        itemHandle = info->items + selected;
         return true;
     }
-
+    if (event == Event::Character('e') && !(state & SETTING_DISPLAY)) {
+        state |= SETTING_DISPLAY;
+        return true;
+    }
+    if (event == Event::Character('a') && !(state & DETAIL_VIEW_DISPLAY)) {
+        state |= DETAIL_VIEW_DISPLAY;
+        itemHandle = nullptr;
+        return true;
+    }
+    if (event == Event::Character(' ') && info->todoCount) {
+        if (info->items[selected].done)
+            MarkUndone(info, selected);
+        else
+            MarkDone(info, selected);
+        return true;
+    }
+    if ((event == Event::Delete || event == Event::Character('d')) && info->todoCount) {
+        DeleteTodoItem(info, selected);
+        return true;
+    }
     int old_selected = selected;
     if (event == Event::ArrowUp || event == Event::Character('k'))
         selected--;
@@ -207,35 +228,70 @@ bool MainView::OnEvent(Event event) {
     return false;
 }
 
+static ftxui::InputOption OneLine(void) {
+    ftxui::InputOption base = ftxui::InputOption::Default();
+    base.multiline = false;
+    return base;
+}
 
-void DetailView::reset(TodoItem *itemIn) {
-    item = itemIn;
-    delete [] checkStates;
-    checkStates = new bool[info->tagCount];
-    checkboxes = vector<Component>(info->tagCount);
-    for (int i = 0; i < info->tagCount; i++)
-        checkboxes[i] = Checkbox(info->tags[i], &checkStates[i]);
-    checkboxContainer = Container::Vertical(checkboxes);
-    if (itemIn) {
-        name = itemIn->name;
-        char tmp[TIME_STR_MAX];
-        struct tm *tmpTime;
-        tmpTime = localtime(&itemIn->startTime);
-        strftime(tmp, TIME_STR_MAX, TIME_FMT_LONG, tmpTime);
-        start = tmp;
-        tmpTime = localtime(&itemIn->deadline);
-        strftime(tmp, TIME_STR_MAX, TIME_FMT_LONG, tmpTime);
-        ddl = tmp;
-        desc = itemIn->desc;
-    } else {
-        name = "";
-        start = "";
-        ddl = "";
-        desc = "";
-    }
-    container = Container::Vertical({
-        Container::Horizontal({
-            Container::Vertical({
+DetailView::DetailView(TodoInfo *g_info): info(g_info), checkStates(nullptr), 
+        nameInput(ftxui::Input(&name, OneLine())),
+        subtaskInput(ftxui::Input(&subtask, OneLine())),
+        startInput(ftxui::Input(&start, OneLine())),
+        ddlInput(ftxui::Input(&ddl, OneLine())),
+        descInput(ftxui::Input(&desc, OneLine())),
+        checkboxContainer(ftxui::Container::Vertical({})) {
+    priorityStrings = {
+        GETTEXT(CRITIAL_PRIORITY),
+        GETTEXT(IMPORTANT_PRIORITY),
+        GETTEXT(NORMAL_PRIORITY),
+        GETTEXT(ORDINARY_PRIORITY)
+    };
+    priorityToggle = ftxui::Toggle(&priorityStrings, &priority);
+    confirmButton = ftxui::Button(GETTEXT(OK), [&] {
+        struct tm tmp;
+        time_t startTime;
+        time_t deadline;
+        if (start.empty())
+            startTime = 0;
+        else {
+            std::stringstream startStream(start);
+            startStream >> std::get_time(&tmp, TIME_FMT_LONG);
+            startTime = mktime(&tmp);
+        }
+        if (ddl.empty())
+            deadline = 0;
+        else {
+            std::stringstream ddlStream(ddl);
+            ddlStream >> std::get_time(&tmp, TIME_FMT_LONG);
+            deadline = mktime(&tmp);
+        };
+
+        state &= ~DETAIL_VIEW_DISPLAY;
+        std::vector<int> tagList;
+        for (int i = 0; i < info->tagCount; i++)
+                if (checkStates[i])
+                tagList.push_back(i);
+
+        std::vector<std::string> subtaskList;
+        std::string token;
+        std::stringstream stream(subtask);
+        while (std::getline(stream, token, '|'))
+            subtaskList.push_back(token);
+        const char **subtasks = new const char *[subtaskList.size()];
+        for (int i = 0; i < subtaskList.size(); i++)
+            subtasks[i] = subtaskList[i].c_str();
+
+        if (!item)
+            AddTodoItem(info, name.c_str(), subtasks, subtaskList.size(),
+                    tagList.data(), tagList.size(), (enum Priority)priority, startTime, deadline, desc.c_str());
+        else
+            ModifyTodoItem(info, item - info->items, name.c_str(), subtasks, subtaskList.size(),
+                    tagList.data(), tagList.size(), (enum Priority)priority, startTime, deadline, desc.c_str());
+    });
+    container = ftxui::Container::Vertical({
+        ftxui::Container::Horizontal({
+            ftxui::Container::Vertical({
                 nameInput,
                 subtaskInput,
                 priorityToggle,
@@ -249,6 +305,52 @@ void DetailView::reset(TodoItem *itemIn) {
     });
 }
 
+void DetailView::reset(TodoItem *itemIn) {
+    item = itemIn;
+    delete [] checkStates;
+    checkStates = new bool[info->tagCount];
+    memset(checkStates, 0, info->tagCount * sizeof(bool)); // clear bool field so it can be switched
+    checkboxes = vector<Component>(info->tagCount);
+    checkboxContainer->DetachAllChildren();
+    for (int i = 0; i < info->tagCount; i++) {
+        checkboxes[i] = Checkbox(info->tags[i], &checkStates[i]);
+        checkboxContainer->Add(checkboxes[i]);
+    }
+    if (itemIn) {
+        name.assign(itemIn->name);
+
+        string mergeOfSubtask;
+        for (int i = 0; i < itemIn->subtaskCount - 1; i++) {
+            mergeOfSubtask += itemIn->subtaskList[i];
+            mergeOfSubtask += "|";
+        }
+        if (itemIn->subtaskCount > 0)
+            mergeOfSubtask += itemIn->subtaskList[itemIn->subtaskCount - 1];
+        subtask.assign(mergeOfSubtask);
+
+        for (int i = 0; i < itemIn->tagCount; i++)
+            checkStates[itemIn->tagList[i]] = true;
+
+        char tmp[TIME_STR_MAX];
+        struct tm *tmpTime;
+        tmpTime = localtime(&itemIn->startTime);
+        strftime(tmp, TIME_STR_MAX, TIME_FMT_LONG, tmpTime);
+        start.assign(tmp);
+        tmpTime = localtime(&itemIn->deadline);
+        strftime(tmp, TIME_STR_MAX, TIME_FMT_LONG, tmpTime);
+        ddl.assign(tmp);
+
+        priority = itemIn->priority;
+        desc.assign(itemIn->desc);
+    } else {
+        name.clear();
+        subtask.clear();
+        start.clear();
+        ddl.clear();
+        desc.clear();
+    }
+}
+
 Element DetailView::Render(void) {
     auto left = vbox({
         hbox({
@@ -259,7 +361,8 @@ Element DetailView::Render(void) {
                 text(GETTEXT(START_TIME_INPUT)),
                 text(GETTEXT(DEADLINE_INPUT)),
                 text(GETTEXT(DESCRIPTION_INPUT)),
-                text(GETTEXT(TIME_FMT_HINT))
+                text(GETTEXT(TIME_FMT_HINT)) | color(Color::GrayDark),
+                text(GETTEXT(SUBTASK_HINT)) | color(Color::GrayDark)
             }),
             vbox({
                 nameInput->Render(),
@@ -273,16 +376,15 @@ Element DetailView::Render(void) {
     });
 
     auto middle = window(text(GETTEXT(TAG_HEADER)), vbox({
-        checkboxContainer->Render() | vscroll_indicator | yframe | border,
-        confirmButton->Render()
+        checkboxContainer->Render() | vscroll_indicator | yframe
     }));
     return window(text(GETTEXT(DETAIL_TITLE)), vbox({
         hbox({
             left,
             middle
         }),
-        confirmButton->Render() | border
-    }));
+        confirmButton->Render() | hcenter | notflex
+    })) | center;
 }
 
 bool DetailView::OnEvent(Event event) {

@@ -43,6 +43,17 @@ const char *GETTEXT(int idx);
 #define NORMAL_PRIORITY 32
 #define ORDINARY_PRIORITY 33
 #define SUBTASK_INPUT 34
+#define SUBTASK_HINT 35
+#define SORT_TYPE_STR 36
+#define SMART_SORT 37
+#define NAME_SORT 38
+#define PRIORITY_SORT 39
+#define START_TIME_SORT 40
+#define DEADLINE_SORT 41
+#define LANGUAGE_STR 42
+#define ENGLISH_STR 43
+#define CHINESE_STR 44
+#define SETTINGS_STR 45
 
 #ifdef __cplusplus
 }

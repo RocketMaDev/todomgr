@@ -9,13 +9,16 @@
 #include <ftxui/screen/color.hpp>
 #include <ftxui/screen/screen.hpp>
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "modi18n.h"
 #include "modview.hpp"
 #include "modfile.h"
 
 using namespace ftxui;
+using namespace std;
 
 ScreenInteractive *screen;
 static TodoInfo *info;
@@ -40,12 +43,13 @@ int main(void) {
     else if (err != 0) 
         perror("Error when reading db");
 
+    *GetLanguage() = info->lang;
     auto main_screen = ScreenInteractive::Fullscreen();
     screen = &main_screen;
     screen->TrackMouse(false); // Disable mouse
 
     manageComponents();
-    puts("Releasing");
+    puts("Releasing...");
     ReleaseTodoInfo(info);
     return 0;
 }
@@ -58,12 +62,34 @@ static void manageComponents(void) {
         btnNo
     });
 
-    auto mainComponent = std::make_shared<MainView>(info, screen);
+    vector<string> langStrings = {GETTEXT(ENGLISH_STR), GETTEXT(CHINESE_STR)};
+    vector<string> sortTypeStrings = {GETTEXT(SMART_SORT), GETTEXT(NAME_SORT), GETTEXT(PRIORITY_SORT),
+            GETTEXT(START_TIME_SORT), GETTEXT(DEADLINE_SORT)};
+    int langSelected = info->lang, sortTypeSelected = info->sortType;
+    auto langToggle = Toggle(&langStrings, &langSelected);
+    auto sortTypeToggle = Toggle(&sortTypeStrings, &sortTypeSelected);
+    auto btnApply = Button(GETTEXT(OK), [&] {
+        info->lang = langSelected;
+        *GetLanguage() = langSelected;
+        info->sortType = (enum SortType)sortTypeSelected;
+        state &= ~SETTING_DISPLAY;
+    });
+    auto settingsComponent = Container::Vertical({
+        langToggle,
+        sortTypeToggle,
+        btnApply
+    });
+
+    auto mainComponent = make_shared<MainView>(info, screen);
+    auto detailComponent = make_shared<DetailView>(info);
 
     auto ultimateContainer = Container::Vertical({
         mainComponent,
-        exitComponent
+        settingsComponent,
+        exitComponent,
+        detailComponent
     });
+    puts("Starting FTXUI instance...");
     screen->Loop(Renderer(ultimateContainer, [&] {
         if (state & EXIT_DISPLAY) {
             exitComponent->TakeFocus();
@@ -76,6 +102,38 @@ static void manageComponents(void) {
                 })) | center
             });
         }
+        if (state & SETTING_DISPLAY) {
+            settingsComponent->TakeFocus();
+            return dbox({
+                mainComponent->Render(),
+                window(text(GETTEXT(SETTINGS_STR)), vbox({
+                    hbox({
+                        vbox({
+                            text(GETTEXT(LANGUAGE_STR)),
+                            text(GETTEXT(SORT_TYPE_STR))
+                        }),
+                        vbox({
+                            langToggle->Render(),
+                            sortTypeToggle->Render()
+                        })
+                    }),
+                    btnApply->Render() | notflex
+                })) | center
+            });
+        }
+        if (state & DETAIL_VIEW_DISPLAY) {
+            if (!(state & DETAIL_SWITCH_STATE)) {
+                detailComponent->reset(mainComponent->getTodoItem());
+                state |= DETAIL_SWITCH_STATE;
+            }
+            detailComponent->TakeFocus();
+            return dbox({
+                mainComponent->Render(),
+                detailComponent->Render()
+            });
+        }
+        if (state & DETAIL_SWITCH_STATE)
+            state &= ~DETAIL_SWITCH_STATE;
         mainComponent->TakeFocus();
         return mainComponent->Render();
     }));

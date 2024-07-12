@@ -33,13 +33,24 @@ const char *i18nstr[][2] = {
     EXPAND_STR(START_TIME_INPUT, "Start time: ", "开始时间："),
     EXPAND_STR(DEADLINE_INPUT, "Deadline: ", "截止时间："),
     EXPAND_STR(DESCRIPTION_INPUT, "Description: ", "描述："),
-    EXPAND_STR(TIME_FMT_HINT, "Time format: e.g. 2024-12-30, subtask split with '|'", "时间格式：如2024-12-30子任务以'|'分割"),
+    EXPAND_STR(TIME_FMT_HINT, "Time format: e.g. 2024-12-30", "时间格式：如2024-12-30"),
+    EXPAND_STR(SUBTASK_HINT, "Split subtasks with '|'", "子任务以'|'分割"),
     EXPAND_STR(OK, "OK", "确定"),
     EXPAND_STR(CRITIAL_PRIORITY, "Critial", "严重"),
     EXPAND_STR(IMPORTANT_PRIORITY, "Important", "重要"),
     EXPAND_STR(NORMAL_PRIORITY, "Normal", "正常"),
     EXPAND_STR(ORDINARY_PRIORITY, "Ordinary", "一般"),
-    EXPAND_STR(SUBTASK_INPUT, "Subtasks: ", "子任务：")
+    EXPAND_STR(SETTINGS_STR, "Settings", "设置"),
+    EXPAND_STR(SUBTASK_INPUT, "Subtasks: ", "子任务："),
+    EXPAND_STR(SORT_TYPE_STR, "Sort by:", "排序方式："),
+    EXPAND_STR(SMART_SORT, "Smart", "智能排序"),
+    EXPAND_STR(NAME_SORT, "Title", "任务名"),
+    EXPAND_STR(PRIORITY_SORT, "Priority", "优先级"),
+    EXPAND_STR(START_TIME_SORT, "Start time", "开始时间"),
+    EXPAND_STR(DEADLINE_SORT, "Deadline", "截止时间"),
+    EXPAND_STR(LANGUAGE_STR, "Language:", "语言："),
+    EXPAND_STR(ENGLISH_STR, "English", "英语"),
+    EXPAND_STR(CHINESE_STR, "Chinese", "中文")
 };
 
 int *GetLanguage(void) {
