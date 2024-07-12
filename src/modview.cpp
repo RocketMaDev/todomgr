@@ -58,13 +58,13 @@ Element MainView::Render(void) {
     vector<string> tagList, subtaskList;
     for (int i = 0; i < info->todoCount; i++) {
         if (info->items[i].subtaskCount == 0)
-            tagList.push_back("");
+            subtaskList.push_back("");
         else if (info->items[i].subtaskCount == 1)
-            tagList.push_back(info->items[i].subtaskList[0]);
+            subtaskList.push_back(info->items[i].subtaskList[0]);
         else {
             string str = info->items[i].subtaskList[0];
             str.append(" ...");
-            tagList.push_back(str);
+            subtaskList.push_back(str);
         }
         if (info->items[i].tagCount == 0)
             tagList.push_back("");
@@ -117,12 +117,12 @@ Element MainView::Render(void) {
 
         Decorator lineDecorator = nothing;
         if (is_focus) {
-            lineDecorator = lineDecorator | focus;
+            lineDecorator = lineDecorator | focus | bold;
             if (Focused())
                 lineDecorator = lineDecorator | inverted;
         }
         if (!info->items[i].done)
-            lineDecorator = lineDecorator | dim;
+            lineDecorator = lineDecorator;
 
         Element document = hbox({
             Checkbox("", &info->items[i].done)->Render(),
@@ -134,7 +134,9 @@ Element MainView::Render(void) {
             separator(),
             text(startList[i]) | size(WIDTH, EQUAL, startLen) | notflex,
             separator(),
-            text(ddlList[i]) | size(WIDTH, EQUAL, ddlLen) | notflex
+            text(ddlList[i]) | size(WIDTH, EQUAL, ddlLen) | notflex,
+            separator(),
+            text(info->items[i].desc) | size(WIDTH, EQUAL, descLen) | notflex
         }) | flex | lineDecorator;
         list.push_back(document);
     }
@@ -185,8 +187,7 @@ bool MainView::OnEvent(Event event) {
         state |= EXIT_DISPLAY;
         return true;
     }
-    if (!Focused())
-        return false;
+
     int old_selected = selected;
     if (event == Event::ArrowUp || event == Event::Character('k'))
         selected--;
