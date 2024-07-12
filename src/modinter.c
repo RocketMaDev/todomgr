@@ -81,19 +81,6 @@ void SortTodoInfo(TodoInfo *g_info,  enum SortType type) {
     }
 }
 
-/*
-void parseSubtasks(char *subtasksStr , TodoItem *new_item) {
-    char *token = strtok(subtasksStr , " ");
-    int subtasksCount = 0;
-    while(token!=NULL) {
-        strcpy(new_item->subtaskList[subtasksCount++] , token);
-        token = strtok(NULL , " ");
-    }
-    new_item->subtaskCount = subtasksCount;
-    new_item->subtaskList = *token;
-}
-*/
-
 
 int AddTodoItem(TodoInfo *g_info, const char *name, const char **subtasks, int subtaskCount, const int *tags ,int tagCount,
        enum Priority priority, time_t startTime, time_t deadline, const char *desc) {
@@ -102,7 +89,6 @@ int AddTodoItem(TodoInfo *g_info, const char *name, const char **subtasks, int s
         TodoItem *new_item = (TodoItem*)malloc(sizeof(TodoItem));
         if(!new_item)
             return -1;
-        //parseSubtasks(subtasks , new_item);
         new_item->name = strdup(name);
         new_item->desc = strdup(desc);
         new_item->done = false;
