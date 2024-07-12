@@ -25,7 +25,21 @@ const char *i18nstr[][2] = {
     EXPAND_STR(VIEW_DETAIL_HINT, "View task detail", "查看任务细节"),
     EXPAND_STR(EXIT_HINT, "Exit", "退出"),
     EXPAND_STR(EDIT_SETTING_HINT, "Settings", "设置"),
-    EXPAND_STR(HINT_TITLE, "Keyboard shortcuts", "快捷键")
+    EXPAND_STR(HINT_TITLE, "Keyboard shortcuts", "快捷键"),
+    EXPAND_STR(SAVE_HINT, "Save", "保存"),
+    EXPAND_STR(DETAIL_TITLE, "Task detail", "任务详情"),
+    EXPAND_STR(NAME_INPUT, "Task title: ", "任务名称："),
+    EXPAND_STR(PRIORITY_INPUT, "Priority: ", "优先级"),
+    EXPAND_STR(START_TIME_INPUT, "Start time: ", "开始时间："),
+    EXPAND_STR(DEADLINE_INPUT, "Deadline: ", "截止时间："),
+    EXPAND_STR(DESCRIPTION_INPUT, "Description: ", "描述："),
+    EXPAND_STR(TIME_FMT_HINT, "Time format: e.g. 2024-12-30, subtask split with '|'", "时间格式：如2024-12-30子任务以'|'分割"),
+    EXPAND_STR(OK, "OK", "确定"),
+    EXPAND_STR(CRITIAL_PRIORITY, "Critial", "严重"),
+    EXPAND_STR(IMPORTANT_PRIORITY, "Important", "重要"),
+    EXPAND_STR(NORMAL_PRIORITY, "Normal", "正常"),
+    EXPAND_STR(ORDINARY_PRIORITY, "Ordinary", "一般"),
+    EXPAND_STR(SUBTASK_INPUT, "Subtasks: ", "子任务：")
 };
 
 int *GetLanguage(void) {

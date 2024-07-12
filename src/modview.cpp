@@ -2,6 +2,7 @@
 #include <cstring>
 #include <ctime>
 #include <ftxui/component/component.hpp>
+#include <ftxui/component/component_base.hpp>
 #include <ftxui/component/event.hpp>
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
@@ -143,10 +144,6 @@ Element MainView::Render(void) {
 
     if (list.empty())
         list.push_back(text(GETTEXT(NO_ITEM_PROMPT)));
-    if (state & EXIT_DISPLAY)
-        list.push_back(text("EXIT_DISPLAY is set"));
-    if (Focused())
-        list.push_back(text("Focused"));
 
     length = info->todoCount;
 
@@ -162,6 +159,9 @@ Element MainView::Render(void) {
         separator(),
         text(" V ") | color(Color::Blue),
         text(GETTEXT(VIEW_TAG_HINT)),
+        separator(),
+        text(" W ") | color(Color::Blue),
+        text(GETTEXT(SAVE_HINT)),
         separator(),
         text(" [SPACE] ") | color(Color::Blue),
         text(GETTEXT(SWITCH_STATE_HINT)),
@@ -187,6 +187,10 @@ bool MainView::OnEvent(Event event) {
         state |= EXIT_DISPLAY;
         return true;
     }
+    if (event == Event::Return && !(state & DETAIL_VIEW_DISPLAY)) {
+        state |= DETAIL_VIEW_DISPLAY;
+        return true;
+    }
 
     int old_selected = selected;
     if (event == Event::ArrowUp || event == Event::Character('k'))
@@ -201,4 +205,90 @@ bool MainView::OnEvent(Event event) {
     }
 
     return false;
+}
+
+
+void DetailView::reset(TodoItem *itemIn) {
+    item = itemIn;
+    delete [] checkStates;
+    checkStates = new bool[info->tagCount];
+    checkboxes = vector<Component>(info->tagCount);
+    for (int i = 0; i < info->tagCount; i++)
+        checkboxes[i] = Checkbox(info->tags[i], &checkStates[i]);
+    checkboxContainer = Container::Vertical(checkboxes);
+    if (itemIn) {
+        name = itemIn->name;
+        char tmp[TIME_STR_MAX];
+        struct tm *tmpTime;
+        tmpTime = localtime(&itemIn->startTime);
+        strftime(tmp, TIME_STR_MAX, TIME_FMT_LONG, tmpTime);
+        start = tmp;
+        tmpTime = localtime(&itemIn->deadline);
+        strftime(tmp, TIME_STR_MAX, TIME_FMT_LONG, tmpTime);
+        ddl = tmp;
+        desc = itemIn->desc;
+    } else {
+        name = "";
+        start = "";
+        ddl = "";
+        desc = "";
+    }
+    container = Container::Vertical({
+        Container::Horizontal({
+            Container::Vertical({
+                nameInput,
+                subtaskInput,
+                priorityToggle,
+                startInput,
+                ddlInput,
+                descInput
+            }),
+            checkboxContainer,
+        }),
+        confirmButton
+    });
+}
+
+Element DetailView::Render(void) {
+    auto left = vbox({
+        hbox({
+            vbox({
+                text(GETTEXT(NAME_INPUT)),
+                text(GETTEXT(SUBTASK_INPUT)),
+                text(GETTEXT(PRIORITY_INPUT)),
+                text(GETTEXT(START_TIME_INPUT)),
+                text(GETTEXT(DEADLINE_INPUT)),
+                text(GETTEXT(DESCRIPTION_INPUT)),
+                text(GETTEXT(TIME_FMT_HINT))
+            }),
+            vbox({
+                nameInput->Render(),
+                subtaskInput->Render(),
+                priorityToggle->Render(),
+                startInput->Render(),
+                ddlInput->Render(),
+                descInput->Render(),
+            })
+        })
+    });
+
+    auto middle = window(text(GETTEXT(TAG_HEADER)), vbox({
+        checkboxContainer->Render() | vscroll_indicator | yframe | border,
+        confirmButton->Render()
+    }));
+    return window(text(GETTEXT(DETAIL_TITLE)), vbox({
+        hbox({
+            left,
+            middle
+        }),
+        confirmButton->Render() | border
+    }));
+}
+
+bool DetailView::OnEvent(Event event) {
+    if (event == Event::Escape) {
+        state &= ~DETAIL_VIEW_DISPLAY;
+        return true;
+    }
+    return container->OnEvent(event);
 }
