@@ -15,3 +15,4 @@ build
 src/.cache
 .cache
 .vscode
+.gdb_history

@@ -17,6 +17,7 @@
 using namespace ftxui;
 using namespace std;
 
+int state = 0;
 static int thisyear;
 static constexpr int TIME_STR_MAX = 16;
 static inline void mktimestr(char *dest, time_t cmp) {
@@ -140,19 +141,52 @@ Element MainView::Render(void) {
 
     if (list.empty())
         list.push_back(text(GETTEXT(NO_ITEM_PROMPT)));
+    if (state & EXIT_DISPLAY)
+        list.push_back(text("EXIT_DISPLAY is set"));
+    if (Focused())
+        list.push_back(text("Focused"));
 
     length = info->todoCount;
-    return window(text(GETTEXT(MAIN_TITLE)), vbox({
-        header,
+
+    auto hintBar = hbox({
+        text(" E ") | color(Color::Blue),
+        text(GETTEXT(EDIT_SETTING_HINT)),
         separator(),
-        vbox(list) | yframe
-    }));
+        text(" A ") | color(Color::Blue),
+        text(GETTEXT(ADD_TASK_HINT)),
+        separator(),
+        text(" D ") | color(Color::Blue),
+        text(GETTEXT(DELETE_TASK_HINT)),
+        separator(),
+        text(" V ") | color(Color::Blue),
+        text(GETTEXT(VIEW_TAG_HINT)),
+        separator(),
+        text(" [SPACE] ") | color(Color::Blue),
+        text(GETTEXT(SWITCH_STATE_HINT)),
+        separator(),
+        text(" [ENTER] ") | color(Color::Blue),
+        text(GETTEXT(VIEW_DETAIL_HINT)),
+        separator(),
+        text(" [ESC] ") | color(Color::Blue),
+        text(GETTEXT(EXIT_HINT))
+    }) | hcenter | notflex;
+    return vbox({
+        window(text(GETTEXT(MAIN_TITLE)), vbox({
+            header,
+            separator(),
+            vbox(list) | yframe,
+        })),
+        window(text(GETTEXT(HINT_TITLE)), hintBar)
+    });
 }
 
 bool MainView::OnEvent(Event event) {
+    if (event == Event::Escape && !(state & EXIT_DISPLAY)) {
+        state |= EXIT_DISPLAY;
+        return true;
+    }
     if (!Focused())
         return false;
-
     int old_selected = selected;
     if (event == Event::ArrowUp || event == Event::Character('k'))
         selected--;
