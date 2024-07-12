@@ -138,7 +138,7 @@ int ModifyTodoItem(TodoInfo *g_info, int itemIndex, const char *name, const char
             g_info->items[itemIndex].priority = priority;
             g_info->items[itemIndex].tagList = (int *)tags;
             g_info->items[itemIndex].tagCount+=tagCount;
-            fee(g_info->items[itemIndex].subtaskList);
+            free(g_info->items[itemIndex].subtaskList);
             for(int i = 0; i<subtaskCount; i++){
             g_info->items[itemIndex].subtaskList[i] = strdup((char *)subtasks[i]);
             }
