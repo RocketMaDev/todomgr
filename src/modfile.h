@@ -5,18 +5,14 @@
 extern "C" {
 #endif
 
-#include <time.h>
 #include <stdbool.h>
+#include <time.h>
 
 #define BUFSIZE 0x8000
 
-enum SortType {
-    SMART, NAME, PRIORITY, START_TIME, DEADLINE
-};
+enum SortType { SMART, NAME, PRIORITY, START_TIME, DEADLINE };
 
-enum Priority {
-    CRITICAL, IMPORTANT, NORMAL, ORDINARY
-};
+enum Priority { CRITICAL, IMPORTANT, NORMAL, ORDINARY };
 
 typedef struct __todo_file_item {
     char *name;
