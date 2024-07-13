@@ -48,6 +48,7 @@ Element MainView::Render(void) {
         descLen = strlen(GETTEXT(DESCRIPTION_HEADER)), 
         tagLen = strlen(GETTEXT(TAG_HEADER));
 
+    SortTodoInfo(info, info->sortType);
     // calc time str
     vector<string> startList, ddlList;
     time_t nowtime = time(NULL);
