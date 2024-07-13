@@ -7,6 +7,7 @@
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/screen/color.hpp>
+#include <locale>
 #include <map>
 #include <string>
 #include <vector>
@@ -191,6 +192,10 @@ bool MainView::OnEvent(Event event) {
         state |= EXIT_DISPLAY;
         return true;
     }
+    if (event == Event::Return && (state & SAVE_DONE_DISPLAY)) {
+        state &= ~SAVE_DONE_DISPLAY;
+        return true;
+    }
     if (event == Event::Return && !(state & DETAIL_VIEW_DISPLAY) && info->todoCount) {
         state |= DETAIL_VIEW_DISPLAY;
         itemHandle = info->items + selected;
@@ -222,6 +227,7 @@ bool MainView::OnEvent(Event event) {
     }
     if (event == Event::Character('w')) {
         WriteTodoFile(info, "tododb");
+        state |= SAVE_DONE_DISPLAY;
         return true;
     }
     int old_selected = selected;
@@ -263,21 +269,27 @@ DetailView::DetailView(TodoInfo *g_info): info(g_info), checkStates(nullptr),
     };
     priorityToggle = ftxui::Toggle(&priorityStrings, &priority);
     confirmButton = ftxui::Button(GETTEXT(OK), [&] { // NOTE one lambda here
-        struct tm tmp;
+        struct tm tmp = {};
         time_t startTime;
         time_t deadline;
         if (start.empty())
             startTime = 0;
+        else if (start == "1970-01-01")
+            startTime = 0;
         else {
             // time str to time_t; no error handling due to lack of time
             std::stringstream startStream(start);
+            startStream.imbue(locale("zh_CN.UTF-8"));
             startStream >> std::get_time(&tmp, TIME_FMT_LONG);
             startTime = mktime(&tmp);
         }
         if (ddl.empty())
             deadline = 0;
+        else if (ddl == "1970-01-01")
+            deadline = 0;
         else {
             std::stringstream ddlStream(ddl);
+            ddlStream.imbue(locale("zh_CN.UTF-8"));
             ddlStream >> std::get_time(&tmp, TIME_FMT_LONG);
             deadline = mktime(&tmp);
         };

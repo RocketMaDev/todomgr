@@ -80,6 +80,10 @@ static void manageComponents(void) {
         btnApply
     });
 
+    auto doneButton = Button(GETTEXT(OK), [&] { 
+        state &= ~SAVE_DONE_DISPLAY; 
+    });
+
     auto mainComponent = make_shared<MainView>(info, screen);
     auto detailComponent = make_shared<DetailView>(info);
     auto tagComponent = make_shared<TagView>(info);
@@ -139,6 +143,13 @@ static void manageComponents(void) {
             return dbox({
                 mainComponent->Render(),
                 tagComponent->Render()
+            });
+        }
+        if (state & SAVE_DONE_DISPLAY) {
+            doneButton->TakeFocus();
+            return dbox({
+                mainComponent->Render(),
+                window(text(GETTEXT(SAVE_DONE)), doneButton->Render() | color(Color::Green)) | center
             });
         }
         if (state & DETAIL_SWITCH_STATE)

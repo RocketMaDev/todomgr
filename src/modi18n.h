@@ -56,7 +56,8 @@ const char *GETTEXT(int idx);
 #define SETTINGS_STR 45
 #define NEW_TAG_PROMPT 46
 #define NO_TAG_PROMPT 47
-#define DELETE_TAG_PROMPT 68
+#define DELETE_TAG_PROMPT 48
+#define SAVE_DONE 49
 
 #ifdef __cplusplus
 }
