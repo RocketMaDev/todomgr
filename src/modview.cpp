@@ -279,7 +279,6 @@ DetailView::DetailView(TodoInfo *g_info): info(g_info), checkStates(nullptr),
         else {
             // time str to time_t; no error handling due to lack of time
             std::stringstream startStream(start);
-            startStream.imbue(locale("zh_CN.UTF-8"));
             startStream >> std::get_time(&tmp, TIME_FMT_LONG);
             startTime = mktime(&tmp);
         }
@@ -289,7 +288,6 @@ DetailView::DetailView(TodoInfo *g_info): info(g_info), checkStates(nullptr),
             deadline = 0;
         else {
             std::stringstream ddlStream(ddl);
-            ddlStream.imbue(locale("zh_CN.UTF-8"));
             ddlStream >> std::get_time(&tmp, TIME_FMT_LONG);
             deadline = mktime(&tmp);
         };
