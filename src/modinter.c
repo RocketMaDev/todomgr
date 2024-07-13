@@ -172,7 +172,7 @@ int AddTag(TodoInfo *g_info, const char *newTag) {
     char **newTagList = (char **)malloc((g_info->tagCount + 1) * sizeof(char *));
     if (newTagList == NULL)
         return -1;
-    memcpy(newTagList, g_info->tags, g_info->todoCount * sizeof(char *));
+    memcpy(newTagList, g_info->tags, g_info->tagCount * sizeof(char *));
     newTagList[g_info->tagCount] = strdup(newTag);
     free(g_info->tags);
     g_info->tags = newTagList;
