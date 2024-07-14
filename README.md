@@ -1,6 +1,6 @@
 # todomgr
 
-A todo manager in TUI with cross-platform support, and multi-language support (Chinese & English).
+A simple todo manager in TUI with cross-platform support, and multi-language support (Chinese & English).
 
 ## Short graphical demo
 
@@ -30,6 +30,9 @@ to `build/` to help Windows load DLLs correctly.
 但是限于时间，最终只能完成在"demo"阶段。总体来说是可用的，但是有不少缺陷，
 如没有考虑文件膨胀的情况，输入时间时也没有做检查。总而言之，这个项目已经走到了生命尽头，
 将停止开发，如果有PR的话我会考虑合入，不接受issue，因为我没空去修了。
+
+**不确保不含有重大漏洞**  
+**Vulnerabilities may be contained in the project!!**
 
 不过如果有人也想基于FTXUI来做“作业”的话，欢迎借鉴我的项目。如果觉得有用的话，
 欢迎给我点个⭐。
